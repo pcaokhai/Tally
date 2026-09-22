@@ -69,10 +69,13 @@ as a hard local requirement without also updating that guard.
   under a static/no CSP become server-rendered on demand once a nonce is involved. Expected,
   not a regression, for anything gated behind a strict CSP.
 
-## `git` in this harness
+## `git` in this harness (resolved)
 
-A shell hook in this environment intercepts plain `git` and can wrongly refuse commands
-inside a worktree with a "not git" isolation error. When a dispatched subagent hits this,
-have it invoke `/usr/bin/git` directly instead of the `git` on `PATH`. Scripts committed to
-the repo should keep using plain `git` — this is a local shell quirk, not something CI or a
-human contributor will ever hit.
+Sprint 0 hit a shell hook (a third-party token-optimization CLI proxy, since removed from the
+local Claude Code config entirely) that intercepted plain `git` and could wrongly refuse
+commands inside a worktree with a "not git" isolation error — worked around at the time by
+invoking `/usr/bin/git` directly. That hook no longer runs, so plain `git` is expected to work
+normally now; this note stays only so a future session doesn't waste time rediscovering it if
+some other local hook ever does the same thing. Scripts committed to the repo use plain `git`
+— that was always correct; the workaround was only ever needed in interactive dispatch
+prompts, never in committed code.
