@@ -4,10 +4,10 @@ SHELL := /bin/bash
 FLAGS ?=
 .PHONY: up down seed contracts gen test lint fmt e2e load chaos docs-check staging-up ddl-snapshot
 
-up:            ## start the local stack (TLY-002)
-	@test -f deploy/compose.yaml || { echo "deploy/compose.yaml not yet created (TLY-002)"; exit 1; }
-	$(FLAGS) docker compose -f deploy/compose.yaml up -d --wait
-down:
+up:            ## start the local stack (TLY-002); memory + health report at the end
+	$(FLAGS) docker compose -f deploy/compose.yaml up -d --wait --wait-timeout 120
+	@./deploy/stack-report.sh
+down:          ## stop the stack; `make down ARGS=-v` also drops the volumes
 	docker compose -f deploy/compose.yaml down $(ARGS)
 seed:          ## load contracts/fixtures (TLY-002)
 	@./deploy/seed.sh

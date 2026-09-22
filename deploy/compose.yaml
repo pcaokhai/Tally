@@ -1,0 +1,165 @@
+# Tally local stack (TLY-002). Ports fixed by docs/02 §"Ports".
+# Local-only credentials — obvious placeholders, never reused anywhere else.
+# Host ports default to docs/02; override any TALLY_*_PORT when another local stack owns one.
+name: tally
+
+x-kafka-bootstrap: &kafka-bootstrap kafka:29092
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: tally
+      POSTGRES_PASSWORD: tally
+      POSTGRES_DB: tally
+    ports: ["${TALLY_PG_PORT:-5432}:5432"]
+    volumes:
+      - pgdata:/var/lib/postgresql   # postgres:18+ wants the mount one level above PGDATA
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/10-databases.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tally -d tally"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:4.1.0
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LISTENERS: INTERNAL://:29092,HOST://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,HOST://localhost:${TALLY_KAFKA_PORT:-9092}
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 24
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_HEAP_OPTS: -Xmx768m -Xms256m
+      CLUSTER_ID: tally-local-cluster-0
+    ports: ["${TALLY_KAFKA_PORT:-9092}:9092"]
+    volumes:
+      - kafkadata:/var/lib/kafka
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:29092 >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 10s
+      retries: 30
+
+  # One-shot: declares the topics from docs/04 §7. Idempotent (--if-not-exists + alter).
+  kafka-init:
+    image: apache/kafka:4.1.0
+    depends_on:
+      kafka: {condition: service_healthy}
+    environment:
+      BOOTSTRAP: *kafka-bootstrap
+    volumes:
+      - ./kafka:/scripts:ro
+    entrypoint: ["/bin/bash", "/scripts/create-topics.sh"]
+    restart: "no"
+
+  redis:
+    image: redis:8-alpine
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
+    ports: ["${TALLY_REDIS_PORT:-6379}:6379"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: ["start-dev", "--import-realm", "--http-port=8180"]
+    depends_on:
+      postgres: {condition: service_healthy}
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: tally
+      KC_DB_PASSWORD: tally
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HEALTH_ENABLED: "true"
+      JAVA_OPTS_KC_HEAP: -Xmx640m
+    ports: ["${TALLY_KEYCLOAK_PORT:-8180}:8180"]
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import:ro
+    healthcheck:
+      test:
+        - CMD
+        - /bin/bash
+        - -c
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3; grep -q '\"status\": \"UP\"' <&3"
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.139.0
+    command: ["--config=/etc/otel/collector.yaml"]
+    depends_on: [tempo, loki]
+    volumes:
+      - ./otel/collector.yaml:/etc/otel/collector.yaml:ro
+    ports:
+      - "${TALLY_OTLP_GRPC_PORT:-4317}:4317"   # OTLP gRPC
+      - "${TALLY_OTLP_HTTP_PORT:-4318}:4318"   # OTLP HTTP
+      - "${TALLY_OTELCOL_METRICS_PORT:-8889}:8889"   # Prometheus exposition
+      - "${TALLY_OTELCOL_HEALTH_PORT:-13133}:13133" # health (probed by stack-report.sh — image is distroless, see plan R3)
+
+  prometheus:
+    image: prom/prometheus:v3.7.3
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.retention.time=24h
+      - --web.enable-lifecycle
+    volumes:
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    ports: ["${TALLY_PROMETHEUS_PORT:-9095}:9090"]
+
+  tempo:
+    image: grafana/tempo:2.9.1
+    command: ["-config.file=/etc/tempo.yaml"]
+    volumes:
+      - ./observability/tempo.yaml:/etc/tempo.yaml:ro
+      - tempodata:/var/tempo
+    ports: ["${TALLY_TEMPO_PORT:-3200}:3200"]
+
+  loki:
+    image: grafana/loki:3.5.9
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - lokidata:/loki
+    ports: ["${TALLY_LOKI_PORT:-3101}:3100"]
+
+  grafana:
+    image: grafana/grafana:12.3.1
+    depends_on: [prometheus, tempo, loki]
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_USERS_DEFAULT_THEME: dark
+    volumes:
+      - ./observability/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/tally.yaml:ro
+      - grafanadata:/var/lib/grafana
+    ports: ["${TALLY_GRAFANA_PORT:-3300}:3000"]
+
+volumes:
+  pgdata:
+  kafkadata:
+  redisdata:
+  prometheusdata:
+  tempodata:
+  lokidata:
+  grafanadata:
