@@ -49,7 +49,7 @@ make docs-check            python scripts/validate_pack.py .
 ## 4. How we work — Superpowers workflow (mandatory)
 
 1. **brainstorming** — only if the story leaves a design decision open; otherwise write a one-paragraph understanding citing doc sections.
-2. **using-git-worktrees** — one worktree + branch per story: `feat/<ID>-<slug>`; worktrees live in `../tally-worktrees/`.
+2. **Isolation, one mechanism only.** One worktree + branch per story: `feat/<ID>-<slug>`. Use the native tool available in your session (`EnterWorktree`, or `Agent(isolation:"worktree")` when dispatching a top-level story-delivery agent) — it owns placement (in practice `.claude/worktrees/`) and cleanup. Do **not** also run `git worktree add` by hand or have a dispatched agent re-run the using-git-worktrees skill's own manual-fallback steps inside a directory a native tool already isolated — that creates a second, redundant worktree layer for no benefit. Only fall back to manual `git worktree add` when no native tool is available in that session.
 3. **writing-plans** — save to `docs/plans/<ID>.md`; tasks of 2–5 min with exact files, the failing test first, and the verification command.
 4. **subagent-driven-development** or **executing-plans** — picked by the story's risk track (§4a), not by default.
 5. **test-driven-development** — RED → GREEN → REFACTOR, always. Test names carry the AC id.
@@ -71,7 +71,7 @@ Classify every story **before** writing its plan. Default to Track A; only Track
 | --- | --- | --- |
 | Execution | `executing-plans` (single session) or one dispatch per group of same-shape tasks, not one per task | `subagent-driven-development` as written below |
 | Review | one review pass + one light final pass | per-task review + fix loop + final whole-branch review + re-review |
-| Model | Sonnet for plan + implementation; Haiku for purely mechanical tasks (copy a config file, wire a script name) | Sonnet for implementation; the most capable available model for the final whole-branch review |
+| Model | Sonnet for the coordinator AND every implementer/reviewer it dispatches; Haiku for purely mechanical tasks (copy a config file, wire a script name) | Sonnet for the coordinator and implementers; the most capable available model **only** for the final whole-branch review — not for the coordinator's own routine turns |
 | Resume cap | 3 — past that, the coordinating session finishes the remaining work directly instead of resuming again | no hard cap; use the fix-loop breaker at round 5 as already specified |
 | Before marking a task DONE | actually run the built artifact once (`curl`, open the page, run the binary) — not just unit tests in isolation; this is what catches the class of bug (CSP breaking hydration, a 404 route escaping a shared layout) that isolated tests miss, and catching it here is cheaper than catching it in final review | same, plus the full per-task review |
 
@@ -81,7 +81,13 @@ A story can be reclassified mid-plan if brainstorming surfaces a Track B concern
 
 **Trivial and doc-only changes skip the pipeline entirely.** A change under ~20 lines that touches no domain logic — a doc fix, a config typo, a one-line Makefile tweak, updating a comment — does not need a worktree, a plan file, or a dedicated review pass. Self-review the diff, run the relevant real check if one applies (e.g. `make docs-check` for a docs edit), and commit directly to the working branch. Reserve the full ceremony for changes that actually carry risk.
 
-**Coordinating multiple stories in parallel:** before dispatching a review or fix wave into any worktree, check `ListAgents` first — never assume a sibling coordinator's own dispatch has finished. Two review/fix dispatches racing the same worktree index is a real failure mode, not a theoretical one. When running several stories in parallel on the most capable model, keep at most one or two on that tier at a time; put the rest on Sonnet, both to control cost and because simultaneous heavy-tier dispatches are the fastest way to trip a shared rate limit and stall everything at once.
+**Coordinating multiple stories in parallel:** before dispatching a review or fix wave into any worktree, check `ListAgents` first — never assume a sibling coordinator's own dispatch has finished. Two review/fix dispatches racing the same worktree index is a real failure mode, not a theoretical one. Model tiering (row above) already keeps most of the fleet on Sonnet — a most-capable-model dispatch should be rare and short-lived (one final review at a time), not a standing coordinator process, which is what actually avoids tripping a shared rate limit.
+
+**Handback reports are delta-only.** When a dispatched coordinator resumes after being cut off, its report states only what changed since its last report (new commits, new findings, current blocker) and points at the plan/ledger file for full history. Do not re-paste the full ruling list or AC status table on every resume — that's pure restated context, and it's what made Sprint 0's longest-running story (TLY-003) grow slower with every resume instead of faster. The full history lives once, in the plan file; the handback is a diff against it.
+
+**Tooling boundary — Superpowers is the default; gstack skills are opt-in, only on a clear match.** This repo's workflow is Superpowers (worktrees, plans, subagent-driven-development) plus the `document-release`/similar gstack skills *only* when a skill's actual assumptions match this repo's shape — check before invoking, don't invoke on the name alone (Sprint 0 wasted a pass on `/document-release`, which assumes a README/CHANGELOG/VERSION layout this repo doesn't use). When unsure, do the work directly or with a plain Superpowers skill instead of reaching for a gstack skill on spec.
+
+**Ponytail governs code, not process.** If Ponytail (lazy-dev) mode is active, it shapes *what you write* — simplest implementation that satisfies the AC, no speculative abstraction — never *whether* the workflow gates in §4/§4a run. A Track B story stays Track B under Ponytail; "keep it simple" means a simpler correct implementation, not a skipped test or review.
 
 Known toolchain gotchas (Gradle/JDK, ESLint versions, etc.) that would otherwise be rediscovered per-story live in `docs/ENVIRONMENT.md` — read it before troubleshooting a build failure that looks environmental rather than code-related, and add to it when you find a new one.
 
