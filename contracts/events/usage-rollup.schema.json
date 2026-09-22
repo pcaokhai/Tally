@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tally.example/events/usage-rollup.schema.json",
+  "title": "Rollups (aggregator \u2192 core, topic tally.usage.rollups.v1)",
+  "description": "Envelope + data. Kafka key = tenant_id. Headers: event-type, tenant-id, traceparent, schema-version (docs/04 \u00a77).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "api_version",
+    "tenant_id",
+    "created_at",
+    "livemode",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9]{8,40}$"
+    },
+    "type": {
+      "enum": [
+        "usage.rollup"
+      ]
+    },
+    "api_version": {
+      "const": "2026-09-01"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "meter_id",
+        "customer_id",
+        "window_start",
+        "window_end",
+        "quantity",
+        "rollup_key"
+      ],
+      "properties": {
+        "meter_id": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "window_start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "window_end": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "quantity": {
+          "type": "number"
+        },
+        "event_count": {
+          "type": "integer"
+        },
+        "watermark": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "rollup_key": {
+          "type": "string",
+          "description": "tenant:meter:customer:window_start, idempotency key for the core upsert"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tally.example/events/usage-raw.schema.json",
+  "title": "Raw usage (core \u2192 aggregator, topic tally.usage.raw.v1)",
+  "description": "Envelope + data. Kafka key = tenant_id. Headers: event-type, tenant-id, traceparent, schema-version (docs/04 \u00a77).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "api_version",
+    "tenant_id",
+    "created_at",
+    "livemode",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9]{8,40}$"
+    },
+    "type": {
+      "enum": [
+        "usage.recorded"
+      ]
+    },
+    "api_version": {
+      "const": "2026-09-01"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "event_id",
+        "meter_id",
+        "customer_id",
+        "quantity",
+        "occurred_at"
+      ],
+      "properties": {
+        "event_id": {
+          "type": "string"
+        },
+        "meter_id": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "quantity": {
+          "type": "number",
+          "minimum": 0
+        },
+        "occurred_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$"
+        }
+      }
+    }
+  }
+}

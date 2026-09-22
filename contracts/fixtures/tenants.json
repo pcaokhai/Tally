@@ -1,0 +1,18 @@
+{
+  "_note": "Test data only. Never real personal or card data. Emails use the reserved .example TLD.",
+  "tenants": [
+    {"id": "ten_1Aa0", "name": "Acme Robotics", "plan_code": "growth", "tier": "POOL", "owner_email": "linh@acme.example"},
+    {"id": "ten_7Pz1", "name": "Quantis AI", "plan_code": "scale", "tier": "POOL", "owner_email": "ops@quantis.example", "_role": "noisy neighbor for load and fairness tests"},
+    {"id": "ten_5Rm4", "name": "Meridian Health", "plan_code": "scale", "tier": "SILO", "owner_email": "it@meridian.example"},
+    {"id": "ten_8Hq2", "name": "Bluefin Labs", "plan_code": "growth", "tier": "POOL", "owner_email": "billing@bluefin.example"}
+  ],
+  "customers": [
+    {"id": "cus_Hb7x", "tenant_id": "ten_1Aa0", "email": "finance@harbor.example", "name": "Harbor & Co", "currency": "usd"},
+    {"id": "cus_Nw3k", "tenant_id": "ten_1Aa0", "email": "ap@northwind.example", "name": "Northwind Traders", "currency": "usd"},
+    {"id": "cus_Gl2s", "tenant_id": "ten_1Aa0", "email": "hello@greenleaf.example", "name": "Greenleaf Studio", "currency": "usd"}
+  ],
+  "processor_test_tokens": {
+    "_note": "Simulator tokens (TLY-701). Behavior is keyed by the suffix.",
+    "succeeds": "pm_sim_ok_4242", "declines_insufficient_funds": "pm_sim_decline_51", "times_out": "pm_sim_timeout", "settles_twice": "pm_sim_dup_settle"
+  }
+}

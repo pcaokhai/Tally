@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tally.example/events/invoice.schema.json",
+  "title": "Invoice events",
+  "description": "Envelope + data. Kafka key = tenant_id. Headers: event-type, tenant-id, traceparent, schema-version (docs/04 \u00a77).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "api_version",
+    "tenant_id",
+    "created_at",
+    "livemode",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9]{8,40}$"
+    },
+    "type": {
+      "enum": [
+        "invoice.finalized",
+        "invoice.paid",
+        "invoice.voided",
+        "invoice.overdue"
+      ]
+    },
+    "api_version": {
+      "const": "2026-09-01"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "invoice_id",
+        "customer_id",
+        "status",
+        "total"
+      ],
+      "properties": {
+        "invoice_id": {
+          "type": "string"
+        },
+        "number": {
+          "type": "string"
+        },
+        "customer_id": {
+          "type": "string"
+        },
+        "subscription_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "OPEN",
+            "PAID",
+            "VOID",
+            "UNCOLLECTIBLE"
+          ]
+        },
+        "total": {
+          "$ref": "#/$defs/Money"
+        },
+        "amount_due": {
+          "$ref": "#/$defs/Money"
+        },
+        "due_date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$"
+        }
+      }
+    }
+  }
+}

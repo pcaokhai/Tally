@@ -1,0 +1,67 @@
+{
+  "algorithm": "HMAC-SHA256",
+  "header": "Tally-Signature",
+  "tolerance_seconds": 300,
+  "vectors": [
+    {
+      "name": "basic",
+      "secrets_valid_for_receiver": [
+        "whsec_test_4f1c2b9a7e6d5c3b"
+      ],
+      "timestamp": 1790012727,
+      "now": 1790012730,
+      "raw_body": "{\"id\":\"evt_1Qf7a9Kd2\",\"type\":\"invoice.paid\",\"api_version\":\"2026-09-01\",\"data\":{\"invoice_id\":\"inv_2058\"}}",
+      "header": "t=1790012727,v1=d3821adc1c77ab083e89b75742203181d4127add703892b44ea44ab9999f5368",
+      "expected": "VALID",
+      "note": "Single signature, within tolerance"
+    },
+    {
+      "name": "rotation-overlap",
+      "secrets_valid_for_receiver": [
+        "whsec_test_9a8b7c6d5e4f3a2b"
+      ],
+      "timestamp": 1790012727,
+      "now": 1790012730,
+      "raw_body": "{\"id\":\"evt_1Qf6b2Pz1\",\"type\":\"payment.failed\",\"api_version\":\"2026-09-01\",\"data\":{\"payment_id\":\"pay_3Qa91\",\"amount\":{\"amount\":125000,\"currency\":\"usd\"}}}",
+      "header": "t=1790012727,v1=79a2eef22d0e4b932d9737512c01f052a58526edbb91a7684684943e5c376bf6,v1=4991e173a4cf3c3a726d2fbc81d89998d7a5a63469ab96c2d83fe0aa5f5668b1",
+      "expected": "VALID",
+      "note": "During overlap the dispatcher sends one v1 per active secret; receiver with only the new secret still verifies"
+    },
+    {
+      "name": "replay-too-old",
+      "secrets_valid_for_receiver": [
+        "whsec_test_4f1c2b9a7e6d5c3b"
+      ],
+      "timestamp": 1790012727,
+      "now": 1790013100,
+      "raw_body": "{\"id\":\"evt_1Qf7a9Kd2\",\"type\":\"invoice.paid\",\"api_version\":\"2026-09-01\",\"data\":{\"invoice_id\":\"inv_2058\"}}",
+      "header": "t=1790012727,v1=d3821adc1c77ab083e89b75742203181d4127add703892b44ea44ab9999f5368",
+      "expected": "REJECT_TIMESTAMP",
+      "note": "now - t = 373 s > 300 s tolerance"
+    },
+    {
+      "name": "tampered-body",
+      "secrets_valid_for_receiver": [
+        "whsec_test_4f1c2b9a7e6d5c3b"
+      ],
+      "timestamp": 1790012727,
+      "now": 1790012730,
+      "raw_body": "{\"id\":\"evt_1Qf7a9Kd2\",\"type\":\"invoice.paid\",\"api_version\":\"2026-09-01\",\"data\":{\"invoice_id\":\"inv_9999\"}}",
+      "header": "t=1790012727,v1=d3821adc1c77ab083e89b75742203181d4127add703892b44ea44ab9999f5368",
+      "expected": "REJECT_SIGNATURE",
+      "note": "Body changed after signing"
+    },
+    {
+      "name": "whitespace-changed",
+      "secrets_valid_for_receiver": [
+        "whsec_test_4f1c2b9a7e6d5c3b"
+      ],
+      "timestamp": 1790012727,
+      "now": 1790012730,
+      "raw_body": "{\"id\":\"evt_1Qf7a9Kd2\", \"type\":\"invoice.paid\", \"api_version\":\"2026-09-01\", \"data\":{\"invoice_id\":\"inv_2058\"}}",
+      "header": "t=1790012727,v1=d3821adc1c77ab083e89b75742203181d4127add703892b44ea44ab9999f5368",
+      "expected": "REJECT_SIGNATURE",
+      "note": "Receivers must verify the raw bytes, never re-serialized JSON"
+    }
+  ]
+}

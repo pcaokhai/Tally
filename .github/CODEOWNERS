@@ -1,0 +1,17 @@
+# Lanes own directories (docs/07 §1). The tech lead reviews everything.
+*                    @pcaokhai
+/contracts/          @pcaokhai
+/scripts/            @pcaokhai
+/deploy/             @pcaokhai
+/docs/               @pcaokhai
+/.github/            @pcaokhai
+/Makefile            @pcaokhai
+/core/               @pcaokhai
+/workers/            @pcaokhai
+/web/                @pcaokhai
+/ops-web/            @pcaokhai
+# Generated code: changes only via `make gen` from contracts/
+/core/build/generated/        @pcaokhai
+/workers/internal/events/     @pcaokhai
+/web/lib/api/generated/       @pcaokhai
+/ops-web/lib/api/generated/   @pcaokhai

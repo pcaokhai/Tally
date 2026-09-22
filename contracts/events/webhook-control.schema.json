@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.tally.example/events/webhook-control.schema.json",
+  "title": "Endpoint control (both directions, topic tally.webhooks.control.v1)",
+  "description": "Envelope + data. Kafka key = tenant_id. Headers: event-type, tenant-id, traceparent, schema-version (docs/04 \u00a77).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "type",
+    "api_version",
+    "tenant_id",
+    "created_at",
+    "livemode",
+    "data"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^evt_[A-Za-z0-9]{8,40}$"
+    },
+    "type": {
+      "enum": [
+        "webhook_endpoint.updated",
+        "webhook_endpoint.deleted",
+        "webhook_endpoint.auto_disabled",
+        "webhook_endpoint.circuit_changed"
+      ]
+    },
+    "api_version": {
+      "const": "2026-09-01"
+    },
+    "tenant_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "livemode": {
+      "type": "boolean"
+    },
+    "data": {
+      "type": "object",
+      "required": [
+        "endpoint_id",
+        "status"
+      ],
+      "properties": {
+        "endpoint_id": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "enum": [
+            "ENABLED",
+            "DEGRADED",
+            "CIRCUIT_OPEN",
+            "DISABLED"
+          ]
+        },
+        "secret_versions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "expires_at"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "expires_at": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "failure_streak": {
+          "type": "integer"
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "Money": {
+      "type": "object",
+      "required": [
+        "amount",
+        "currency"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "type": "integer"
+        },
+        "currency": {
+          "type": "string",
+          "pattern": "^[a-z]{3}$"
+        }
+      }
+    }
+  }
+}
