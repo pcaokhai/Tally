@@ -30,8 +30,8 @@ Version 1.0 · 2026-09-22 · Owner: Tech lead
 
 | Gate | Threshold | Blocks |
 | --- | --- | --- |
-| Line coverage | ≥ 80 % per module | merge |
-| Branch coverage `kernel.money`, `ledger`, `billing.pricing` | ≥ 90 % | merge |
+| Line coverage | ≥ 80 % per module | release (merge once coverage tooling is wired into CI — not yet, see note) |
+| Branch coverage `kernel.money`, `ledger`, `billing.pricing` | ≥ 90 % | release (merge once coverage tooling is wired into CI — not yet, see note) |
 | Mutation score (PIT) `ledger`, `billing` | ≥ 70 % | release |
 | Static analysis | 0 new errors (Error Prone, golangci-lint, eslint) | merge |
 | Architecture tests | 0 violations | merge |
@@ -40,6 +40,13 @@ Version 1.0 · 2026-09-22 · Owner: Tech lead
 | E2E | all journeys of slices being released green | flag on |
 | Performance | k6 thresholds = NFR-PER/FAIR numbers in docs/02 §2.2 | release |
 | Accessibility | axe 0 violations on changed screens | merge |
+
+**Note on coverage gates:** as of Sprint 0, no jacoco/go-coverage tooling is wired into
+`Makefile` or CI — the coverage numbers above are the target, not an enforced merge gate yet.
+Don't treat "no coverage tool ran" as a silent pass; the real merge gates today are `make lint
+test contracts` plus the architecture tests, which are enforced. Wire coverage tooling into
+CI as the first story that touches `kernel.money`/`ledger`/`billing.pricing` lands (Sprint 2,
+TLY-202), then flip these two rows back to `merge`.
 
 ## 4. Test data rules
 
