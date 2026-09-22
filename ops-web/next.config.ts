@@ -1,8 +1,17 @@
 import type { NextConfig } from "next";
+import { buildSecurityHeaders } from "./lib/csp";
 
-// TODO(TLY-007 T3): security headers (strict CSP, HSTS, X-Frame-Options)
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  async headers() {
+    const headers = buildSecurityHeaders({ isProduction: process.env.NODE_ENV === "production" });
+    return [
+      {
+        source: "/(.*)",
+        headers: headers.map((h) => ({ key: h.key, value: h.value })),
+      },
+    ];
+  },
 };
 
 export default nextConfig;
