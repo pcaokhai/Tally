@@ -30,6 +30,8 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-core")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(libs.archunit)
+    testImplementation(libs.spring.modulith.starter.test)
 }
 
 openApiGenerate {
@@ -92,7 +94,13 @@ tasks.register<Test>("integrationTest") {
     }
 }
 
-tasks.register("archTest") {
+tasks.register<Test>("archTest") {
     group = "verification"
-    description = "Placeholder until TLY-004 Task 2 adds Spring Modulith verify() and ArchUnit rules."
+    description = "ArchUnit rules and Spring Modulith verify() (no Docker required)."
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching("com.tally.core.architecture.*")
+    }
 }

@@ -12,6 +12,7 @@ swaggerRequestValidator = "3.0.0"
 spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
 spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "springModulith" }
 archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit" }
+spring-modulith-starter-test = { module = "org.springframework.modulith:spring-modulith-starter-test" }
 swagger-request-validator-spring-webmvc = { module = "com.atlassian.oai:swagger-request-validator-spring-webmvc", version.ref = "swaggerRequestValidator" }
 
 [plugins]
