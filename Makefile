@@ -19,7 +19,7 @@ contracts:     ## regenerate + validate contracts (TLY-003 adds Spectral/oasdiff
 	./scripts/oasdiff-gate.sh
 	@git diff --quiet -- contracts/ || { echo "contracts/ changed: commit the regenerated files"; exit 1; }
 gen:           ## server stubs, clients, mocks from contracts (TLY-003)
-	cd core && ./gradlew openApiGenerate
+	cd core && ./gradlew openApiGenerate compileJava
 	cd workers && go generate ./...
 	cd web && pnpm gen
 	cd ops-web && pnpm gen
