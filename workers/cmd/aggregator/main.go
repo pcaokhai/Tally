@@ -46,7 +46,7 @@ func run() error {
 		}
 	}()
 
-	slog.InfoContext(ctx, "aggregator starting", "service", cfg.ServiceName)
+	slog.InfoContext(ctx, "aggregator starting")
 	return app.Run(ctx, cfg.ShutdownTimeout, intake)
 }
 

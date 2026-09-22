@@ -46,7 +46,7 @@ func run() error {
 		}
 	}()
 
-	slog.InfoContext(ctx, "dispatcher starting", "service", cfg.ServiceName)
+	slog.InfoContext(ctx, "dispatcher starting")
 	return app.Run(ctx, cfg.ShutdownTimeout, intake)
 }
 
