@@ -1,0 +1,12 @@
+package: events
+generate:
+  models: true
+output-options:
+  type-mapping:
+    number:
+      default:
+        type: float64
+      formats:
+        float: { type: float32 }
+        double: { type: float64 }
+output: openapi_types.gen.go

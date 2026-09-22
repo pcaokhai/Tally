@@ -332,8 +332,13 @@ def build(title, desc, server, rows, schemas, sec):
         r["default"] = {"$ref": "#/components/responses/Problem"}
         o["responses"] = r
         paths.setdefault(p, {})[m] = o
-    return {"openapi": "3.1.0", "info": {"title": title, "version": "1.0.0", "description": desc},
-            "servers": [{"url": server}], "security": [{k: []} for k in sec], "paths": paths, "components": comps}
+    tag_descriptions = {"Tenants": "Tenant lifecycle and configuration."}
+    tags = [{"name": t, "description": tag_descriptions.get(t, f"{t} operations.")}
+            for t in sorted({tag for _, _, _, tag, *_ in rows})]
+    return {"openapi": "3.1.0",
+            "info": {"title": title, "version": "1.0.0", "description": desc,
+                      "contact": {"name": "Tally platform team", "url": "https://github.com/pcaokhai/tally"}},
+            "servers": [{"url": server}], "security": [{k: []} for k in sec], "tags": tags, "paths": paths, "components": comps}
 
 tenant = build("Tally tenant API", "Normative contract for the tenant API (docs/04). Money is always integer minor units. Tenant comes from the credential only.",
                "https://api.tally.example", T, {}, {"bearerApiKey": {"type": "http", "scheme": "bearer", "description": "sk_live_/sk_test_ key or BFF-minted JWT"}})

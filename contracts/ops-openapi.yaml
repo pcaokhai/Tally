@@ -4,10 +4,30 @@ info:
   title: Tally operator API
   version: 1.0.0
   description: Operator console API (docs/04 §6). VPN-only origin, operator realm tokens, reason header on tenant data.
+  contact:
+    name: Tally platform team
+    url: https://github.com/pcaokhai/tally
 servers:
 - url: https://ops.internal
 security:
 - operatorJwt: []
+tags:
+- name: Config
+  description: Config operations.
+- name: Fleet
+  description: Fleet operations.
+- name: Governance
+  description: Governance operations.
+- name: Health
+  description: Health operations.
+- name: Jobs
+  description: Jobs operations.
+- name: Money
+  description: Money operations.
+- name: Overview
+  description: Overview operations.
+- name: Tenants
+  description: Tenant lifecycle and configuration.
 paths:
   /ops/v1/overview:
     get:

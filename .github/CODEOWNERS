@@ -15,3 +15,4 @@
 /workers/internal/events/     @pcaokhai
 /web/lib/api/generated/       @pcaokhai
 /ops-web/lib/api/generated/   @pcaokhai
+/workers/internal/store/sqlc/  @pcaokhai

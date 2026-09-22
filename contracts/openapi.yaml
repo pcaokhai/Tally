@@ -4,10 +4,40 @@ info:
   title: Tally tenant API
   version: 1.0.0
   description: Normative contract for the tenant API (docs/04). Money is always integer minor units. Tenant comes from the credential only.
+  contact:
+    name: Tally platform team
+    url: https://github.com/pcaokhai/tally
 servers:
 - url: https://api.tally.example
 security:
 - bearerApiKey: []
+tags:
+- name: Catalog
+  description: Catalog operations.
+- name: Customers
+  description: Customers operations.
+- name: Developers
+  description: Developers operations.
+- name: Events
+  description: Events operations.
+- name: Identity
+  description: Identity operations.
+- name: Invoices
+  description: Invoices operations.
+- name: Payments
+  description: Payments operations.
+- name: Reports
+  description: Reports operations.
+- name: Settings
+  description: Settings operations.
+- name: Subscriptions
+  description: Subscriptions operations.
+- name: Testing
+  description: Testing operations.
+- name: Usage
+  description: Usage operations.
+- name: Webhooks
+  description: Webhooks operations.
 paths:
   /v1/me:
     get:

@@ -38,7 +38,12 @@ def main(root: Path) -> int:
     if not service_claude:
         warnings.append("no per-service CLAUDE.md found (expected <service>/CLAUDE.md)")
 
+    def skip(p: Path) -> bool:
+        return "node_modules" in p.parts or ".git" in p.parts
+
     for p in list(root.rglob("*.yaml")) + list(root.rglob("*.yml")):
+        if skip(p):
+            continue
         if yaml is None:
             warnings.append("PyYAML not installed; YAML files not parsed")
             break
@@ -47,6 +52,8 @@ def main(root: Path) -> int:
         except Exception as e:  # noqa: BLE001
             errors.append(f"invalid YAML {p.relative_to(root)}: {e}")
     for p in root.rglob("*.json"):
+        if skip(p):
+            continue
         try:
             json.loads(p.read_text())
         except Exception as e:  # noqa: BLE001
