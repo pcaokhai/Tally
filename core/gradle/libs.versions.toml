@@ -1,0 +1,4 @@
+[versions]
+java = "25"
+
+[plugins]
