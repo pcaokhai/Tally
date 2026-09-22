@@ -1019,7 +1019,7 @@ type EndpointHealth struct {
 	NextProbeAt    *time.Time `json:"next_probe_at,omitempty"`
 	P95Ms          *int       `json:"p95_ms,omitempty"`
 	Status         string     `json:"status"`
-	SuccessRate24h float32    `json:"success_rate_24h"`
+	SuccessRate24h float64    `json:"success_rate_24h"`
 }
 
 // Event defines model for Event.
@@ -1251,7 +1251,7 @@ type PaymentSummary struct {
 	CollectedThisMonth Money   `json:"collected_this_month"`
 	FailedCount        int     `json:"failed_count"`
 	RefundedThisMonth  Money   `json:"refunded_this_month"`
-	SuccessRate        float32 `json:"success_rate"`
+	SuccessRate        float64 `json:"success_rate"`
 }
 
 // Price defines model for Price.
@@ -1527,20 +1527,20 @@ type UsageEvent struct {
 	EventId    string    `json:"event_id"`
 	Meter      string    `json:"meter"`
 	OccurredAt Timestamp `json:"occurred_at"`
-	Quantity   float32   `json:"quantity"`
+	Quantity   float64   `json:"quantity"`
 }
 
 // UsageSummary defines model for UsageSummary.
 type UsageSummary struct {
-	Actual                 float32   `json:"actual"`
-	Included               float32   `json:"included"`
+	Actual                 float64   `json:"actual"`
+	Included               float64   `json:"included"`
 	Meter                  string    `json:"meter"`
 	PeriodEnd              Timestamp `json:"period_end"`
 	PeriodStart            Timestamp `json:"period_start"`
-	Projected              float32   `json:"projected"`
+	Projected              float64   `json:"projected"`
 	ProjectedOverageCharge *Money    `json:"projected_overage_charge,omitempty"`
 	Series                 *[]struct {
-		Cumulative float32            `json:"cumulative"`
+		Cumulative float64            `json:"cumulative"`
 		Date       openapi_types.Date `json:"date"`
 		Projected  *bool              `json:"projected,omitempty"`
 	} `json:"series,omitempty"`
