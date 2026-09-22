@@ -21,6 +21,7 @@ Everything needed to start Sprint 0 is here; nothing lives only in chat. Contrac
 | — | [ADRs](adr/) | Decisions (index below) | Everyone | See table |
 | — | [Plans](plans/README.md) | writing-plans output per story | Lanes | Living |
 | — | [assets/ddl](assets/ddl/) | Baseline DDL (core, dispatcher) | CORE, WORK | Baseline |
+| — | [Releases](releases/) | Sprint-review records: what shipped, how to test, follow-ups | Everyone | Living |
 
 ## Reading order
 
