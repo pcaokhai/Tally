@@ -28,4 +28,13 @@ python scripts/gen_adrs.py             # docs/adr/
 python scripts/validate_pack.py .      # consistency check (make docs-check)
 ```
 
+## Contract pipeline (`make contracts` / `make gen`)
+
+`contracts/` (OpenAPI 3.1 + JSON Schema events + webhook vectors) is the single source of truth for every service boundary. Never hand-edit it or any generated code.
+
+- `make contracts` regenerates `contracts/` from the generator scripts, lints it with Spectral, and runs an oasdiff breaking-change gate against `origin/main`. If the gate finds a breaking change it fails the build unless `BREAKING_APPROVED=1` is set (CI sets this only when the PR carries the `breaking-approved` label) — that is the escape hatch for an intentional breaking contract change, and it still prints the full breaking-change report so reviewers see what was approved. It also fails if the regenerated `contracts/` files differ from what's committed, so a contract change and its regenerated output always land in the same commit.
+- `make gen` regenerates the per-language artifacts from `contracts/`: Spring interfaces + models in `core` (via `openApiGenerate`, which `compileJava` depends on — so a contract change that a handler doesn't yet match fails the Java build, not just a lint), Go types in `workers`, and typed clients + MSW mocks in `web`/`ops-web`.
+
+See `docs/plans/TLY-003.md` for a worked example of a breaking rename walking through both gates.
+
 Design canvas: https://claude.ai/artifact/2qhb5nQT1s9m9SCuUoqHJu
