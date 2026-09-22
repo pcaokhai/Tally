@@ -1,3 +1,4 @@
+// Command aggregator turns raw usage events into windowed rollups.
 package main
 
 import "fmt"

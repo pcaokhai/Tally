@@ -3,6 +3,31 @@ run:
   timeout: 3m
 linters:
   enable:
+    - errcheck
     - govet
     - staticcheck
-    - errcheck
+    - revive
+    - gocyclo
+    - depguard
+    - gosec
+    - bodyclose
+    - contextcheck
+  settings:
+    gocyclo:
+      min-complexity: 15
+    depguard:
+      rules:
+        domain:
+          files:
+            - "**/internal/*/domain/**"
+          deny:
+            - pkg: github.com/jackc/pgx
+              desc: "hexagonal layering (CLAUDE.md §6.8): domain packages must not import the Postgres driver"
+            - pkg: github.com/jackc/pgx/v5
+              desc: "hexagonal layering (CLAUDE.md §6.8): domain packages must not import the Postgres driver"
+            - pkg: github.com/twmb/franz-go
+              desc: "hexagonal layering (CLAUDE.md §6.8): domain packages must not import the Kafka client"
+            - pkg: net/http
+              desc: "hexagonal layering (CLAUDE.md §6.8): domain packages must not import HTTP transport"
+  exclusions:
+    generated: lax

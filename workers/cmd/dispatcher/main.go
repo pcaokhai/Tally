@@ -1,3 +1,4 @@
+// Command dispatcher delivers webhooks with per-tenant fairness.
 package main
 
 import "fmt"
