@@ -1,6 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { ABSOLUTE_LIMIT_MS, IDLE_LIMIT_MS, remainingSession } from "./session";
 
+describe("remainingSession under backward clock skew", () => {
+  it("never reports more than the idle bound when the clock jumps backwards — TLY-007-AC2", () => {
+    const result = remainingSession({
+      now: 1_000,
+      startedAt: 1_000,
+      lastActivityAt: 60_000,
+    });
+
+    expect(result.idleMsLeft).toBe(IDLE_LIMIT_MS);
+    expect(result.absoluteMsLeft).toBeLessThanOrEqual(ABSOLUTE_LIMIT_MS);
+  });
+});
+
 describe("remainingSession", () => {
   it("expires at the 15 minute idle bound — TLY-007-AC2", () => {
     const startedAt = 0;

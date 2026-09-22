@@ -42,6 +42,9 @@ export function SessionTimer() {
       <span className="font-mono-ops text-[10px] uppercase tracking-widest text-hairline">
         Session
       </span>
+      {/* The digits tick every second; announcing each tick would make the console
+          unusable with a screen reader, so the live region below announces once at
+          the warning threshold instead (R2 review LOW #4). */}
       <span
         aria-live="off"
         className={`font-mono-ops text-sm ${isWarning ? "text-warn" : ""}`}

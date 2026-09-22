@@ -14,4 +14,10 @@ describe("ConsoleSectionPage", () => {
       ConsoleSectionPage({ params: Promise.resolve({ section: "bogus" }) }),
     ).rejects.toThrow();
   });
+
+  it("rejects /overview because it duplicates the overview page at / — TLY-007-AC1", async () => {
+    await expect(
+      ConsoleSectionPage({ params: Promise.resolve({ section: "overview" }) }),
+    ).rejects.toThrow();
+  });
 });

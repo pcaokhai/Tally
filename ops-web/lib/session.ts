@@ -14,13 +14,19 @@ export interface SessionRemaining {
   readonly expired: boolean;
 }
 
+function clamp(value: number, limit: number): number {
+  return Math.min(limit, Math.max(0, value));
+}
+
 export function remainingSession({
   now,
   startedAt,
   lastActivityAt,
 }: SessionClock): SessionRemaining {
-  const idleMsLeft = Math.max(0, IDLE_LIMIT_MS - (now - lastActivityAt));
-  const absoluteMsLeft = Math.max(0, ABSOLUTE_LIMIT_MS - (now - startedAt));
+  // Clamped both ways: a clock that jumps backwards must never show more time
+  // left than the NFR-ADM-SEC-01 bounds allow (docs/02, R2 review MEDIUM #3).
+  const idleMsLeft = clamp(IDLE_LIMIT_MS - (now - lastActivityAt), IDLE_LIMIT_MS);
+  const absoluteMsLeft = clamp(ABSOLUTE_LIMIT_MS - (now - startedAt), ABSOLUTE_LIMIT_MS);
   const msLeft = Math.min(idleMsLeft, absoluteMsLeft);
   return {
     idleMsLeft,

@@ -13,7 +13,9 @@ export default async function ConsoleSectionPage({
   params: Promise<{ section: string }>;
 }) {
   const { section } = await params;
-  if (!isNavSlug(section)) {
+  // `overview` is served by app/(console)/page.tsx at `/`; accepting it here too would
+  // expose a duplicate placeholder screen at /overview (R2 review MEDIUM #1).
+  if (!isNavSlug(section) || section === "overview") {
     notFound();
   }
 
