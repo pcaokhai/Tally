@@ -127,6 +127,29 @@ caught (`docs/plans/TLY-007.md` rulings R8/R11).
   scaffold where splitting would leave an untestable partial state; recorded here as a knowing
   exception, not a silently ignored rule.
 
+## Retrospective: process cost
+
+Sprint 0 ran every story through the full multi-round review ceremony (per-task review, fix
+loop, final whole-branch review, re-review) regardless of what the story actually touched.
+That ceremony exists for money/RLS/idempotency-class risk; applying it to pure scaffolding
+was the main cost driver — roughly 7-8 hours wall-clock and on the order of 10M+ tokens
+across all agents for seven stories that ship no user-visible behavior. Concretely:
+
+- One story alone needed 15+ resumes because its own coordinator ran full per-task review
+  on what was mostly config and wiring, and re-stated its full ruling history on every
+  handback instead of a delta.
+- Several reviewers were lost mid-task to session rate limits and had to be re-dispatched
+  from scratch, each restart re-deriving context a delta-only handback would have preserved.
+- A coordinator and its own dispatched sub-agent raced to review the same branch
+  simultaneously — caught before it corrupted anything, but wasted a cycle.
+- The same toolchain issues (Gradle/JDK 25, ESLint 9 flat config) were independently
+  rediscovered by more than one story because nothing had been written down yet.
+
+Root CLAUDE.md §4a (story risk track) and `docs/ENVIRONMENT.md` (toolchain gotchas) exist
+because of this — read both before starting Sprint 1's stories, which mix genuine Track B
+work (tenant isolation, RLS) with more Track A work (the BFF login shell, the API keys
+screen) that should not repeat this cost.
+
 ## What's next
 
 Sprint 1 (docs/07-delivery-plan.md §3.1): tenant provisioning + RLS (TLY-101/102), identity

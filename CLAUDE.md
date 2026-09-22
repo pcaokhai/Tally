@@ -51,13 +51,35 @@ make docs-check            python scripts/validate_pack.py .
 1. **brainstorming** — only if the story leaves a design decision open; otherwise write a one-paragraph understanding citing doc sections.
 2. **using-git-worktrees** — one worktree + branch per story: `feat/<ID>-<slug>`; worktrees live in `../tally-worktrees/`.
 3. **writing-plans** — save to `docs/plans/<ID>.md`; tasks of 2–5 min with exact files, the failing test first, and the verification command.
-4. **subagent-driven-development** (default) or **executing-plans** (small or tightly coupled stories).
+4. **subagent-driven-development** or **executing-plans** — picked by the story's risk track (§4a), not by default.
 5. **test-driven-development** — RED → GREEN → REFACTOR, always. Test names carry the AC id.
 6. **verification-before-completion** — run the commands and paste real output before claiming done.
 7. **requesting-code-review** → **receiving-code-review**.
 8. **finishing-a-development-branch** — rebase, green CI, squash-merge with a Conventional Commit title.
 
 Bugs: **systematic-debugging** first — reproduce, root cause, regression test, fix. **dispatching-parallel-agents** only for tasks with disjoint file sets.
+
+## 4a. Story risk track (triage before picking workflow depth)
+
+Classify every story **before** writing its plan. Default to Track A; only Track B stories get the full ceremony below — applying Track B's review depth to Track A work is the single biggest source of wasted time and tokens observed in Sprint 0 (TLY-003 alone needed 15+ resumes running full multi-round review on pure scaffolding).
+
+**Track B (full ceremony)** — a story is Track B if it touches ANY of: money/ledger, RLS/tenant isolation, idempotency, auth/impersonation/four-eyes, webhook signing/delivery, payment processor integration, or any table migration carrying tenant data. Everything in docs/06 epics E2, E5, E7, E8 and most of E4/E6 is Track B by default.
+
+**Track A (lightweight)** — everything else: scaffolding, CI/tooling, app shells, design tokens, docs generators, dev-stack config. Most of E0 and E3's platform stories are Track A.
+
+| | Track A | Track B |
+| --- | --- | --- |
+| Execution | `executing-plans` (single session) or one dispatch per group of same-shape tasks, not one per task | `subagent-driven-development` as written below |
+| Review | one review pass + one light final pass | per-task review + fix loop + final whole-branch review + re-review |
+| Model | Sonnet for plan + implementation; Haiku for purely mechanical tasks (copy a config file, wire a script name) | Sonnet for implementation; the most capable available model for the final whole-branch review |
+| Resume cap | 3 — past that, the coordinating session finishes the remaining work directly instead of resuming again | no hard cap; use the fix-loop breaker at round 5 as already specified |
+| Before marking a task DONE | actually run the built artifact once (`curl`, open the page, run the binary) — not just unit tests in isolation; this is what catches the class of bug (CSP breaking hydration, a 404 route escaping a shared layout) that isolated tests miss, and catching it here is cheaper than catching it in final review | same, plus the full per-task review |
+
+A story can be reclassified mid-plan if brainstorming surfaces a Track B concern in what looked like Track A work — record that as a ruling, don't silently apply Track B ceremony without saying why.
+
+**Coordinating multiple stories in parallel:** before dispatching a review or fix wave into any worktree, check `ListAgents` first — never assume a sibling coordinator's own dispatch has finished. Two review/fix dispatches racing the same worktree index is a real failure mode, not a theoretical one. When running several stories in parallel on the most capable model, keep at most one or two on that tier at a time; put the rest on Sonnet, both to control cost and because simultaneous heavy-tier dispatches are the fastest way to trip a shared rate limit and stall everything at once.
+
+Known toolchain gotchas (Gradle/JDK, ESLint versions, etc.) that would otherwise be rediscovered per-story live in `docs/ENVIRONMENT.md` — read it before troubleshooting a build failure that looks environmental rather than code-related, and add to it when you find a new one.
 
 ## 5. Parallel work rules
 
@@ -83,7 +105,7 @@ Bugs: **systematic-debugging** first — reproduce, root cause, regression test,
 11. **Observability:** structured JSON logs with `tenant.id`, `request_id`, `trace_id`; RED metrics per inbound interface; no high-cardinality labels.
 12. **Config** from env with typed validation at startup; fail fast on missing config.
 13. **Generated code is never edited by hand**; change the contract and run `make gen`.
-14. **PRs:** one story, ≤ 400 changed lines excluding generated code, docs updated in the same PR.
+14. **PRs:** one story, ≤ 400 changed lines excluding generated code, docs updated in the same PR. A from-scratch Track A scaffold (a new app shell, a new lane's toolchain) is exempt by default — splitting a first-time scaffold into multiple PRs usually produces an untestable partial state — but record the exemption as a ruling instead of silently going over.
 
 ## 7. Definition of Done
 

@@ -22,6 +22,7 @@ Everything needed to start Sprint 0 is here; nothing lives only in chat. Contrac
 | — | [Plans](plans/README.md) | writing-plans output per story | Lanes | Living |
 | — | [assets/ddl](assets/ddl/) | Baseline DDL (core, dispatcher) | CORE, WORK | Baseline |
 | — | [Releases](releases/) | Sprint-review records: what shipped, how to test, follow-ups | Everyone | Living |
+| — | [Environment notes](ENVIRONMENT.md) | Toolchain gotchas found the hard way (Gradle/JDK, ESLint, Next.js, …) | Every lane | Living |
 
 ## Reading order
 

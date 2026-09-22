@@ -4,6 +4,13 @@ Version 1.0 · 2026-09-22 · Owner: Tech lead
 
 Sprints are 2 weeks. At side-project pace a sprint may stretch to 3 weeks; the order and waves do not change, only the calendar. Every story in docs/06 appears in exactly one sprint below.
 
+Before picking a story's execution workflow, classify it per root CLAUDE.md §4a (Track A —
+lightweight, for scaffolding/tooling/shells; Track B — full multi-round review, for anything
+touching money/RLS/idempotency/auth/webhook signing). Sprint 0 ran every story through Track
+B's ceremony regardless of content, which is the single biggest reason it took far longer
+than the work itself warranted (docs/releases/sprint-0.md has the retrospective numbers).
+Most of E0 is Track A; most of E2/E5/E7/E8 is Track B.
+
 ## 1. Delivery model and capacity
 
 | Lane | Owns | Worked by | Throughput |
