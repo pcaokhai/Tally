@@ -49,7 +49,7 @@ make docs-check            python scripts/validate_pack.py .
 ## 4. How we work — Superpowers workflow (mandatory)
 
 1. **brainstorming** — only if the story leaves a design decision open; otherwise write a one-paragraph understanding citing doc sections.
-2. **Isolation, one mechanism only.** One worktree + branch per story: `feat/<ID>-<slug>`. Use the native tool available in your session (`EnterWorktree`, or `Agent(isolation:"worktree")` when dispatching a top-level story-delivery agent) — it owns placement (in practice `.claude/worktrees/`) and cleanup. Do **not** also run `git worktree add` by hand or have a dispatched agent re-run the using-git-worktrees skill's own manual-fallback steps inside a directory a native tool already isolated — that creates a second, redundant worktree layer for no benefit. Only fall back to manual `git worktree add` when no native tool is available in that session.
+2. **Isolation, one mechanism only.** One worktree + branch per story: `feat/<ID>-<slug>`. Use the native tool available in your session (`EnterWorktree`, or `Agent(isolation:"worktree")` when dispatching a top-level story-delivery agent) — it owns placement (in practice `.claude/worktrees/`) and cleanup. Do **not** also run `git worktree add` by hand or have a dispatched agent re-run the using-git-worktrees skill's own manual-fallback steps inside a directory a native tool already isolated — that creates a second, redundant worktree layer for no benefit. Only fall back to manual `git worktree add` when no native tool is available in that session. The native tool's auto-generated branch name (e.g. `worktree-agent-<id>`) won't match `feat/<ID>-<slug>` — rename it (`git branch -m feat/<ID>-<slug>`) as the first step after the worktree is created, before any commits land, so every commit on the branch carries the right name from the start.
 3. **writing-plans** — save to `docs/plans/<ID>.md`; tasks of 2–5 min with exact files, the failing test first, and the verification command.
 4. **subagent-driven-development** or **executing-plans** — picked by the story's risk track (§4a), not by default.
 5. **test-driven-development** — RED → GREEN → REFACTOR, always. Test names carry the AC id.
@@ -94,11 +94,11 @@ Known toolchain gotchas (Gradle/JDK, ESLint versions, etc.) that would otherwise
 ## 5. Parallel work rules
 
 - **Contract first.** Any boundary change starts with a `contract/<slice>-<slug>` PR touching only `contracts/`, approved by the tech lead, merged on day 1 of the sprint.
-- **Feature slices ship together.** Backend and frontend stories of a slice share one contract, run in parallel worktrees, merge behind one flag (`FF_<SLICE>_<NAME>`), release together (docs/07 §2).
-- **Lanes own directories.** PLAT = `contracts/ deploy/ scripts/ .github/ Makefile docs/` · CORE = `core/` · WORK = `workers/` · WEB = `web/` · OPSW = `ops-web/`. Never edit another lane's directory; write a Ruling instead.
+- **Feature flags are pre-launch-optional.** docs/07 §2 still names a `FF_<SLICE>_<NAME>` flag per slice as the reference design — keep using one when you genuinely need to decouple two concurrently-running agents/sessions on the same slice, or when a story's own AC calls for staged rollout. Otherwise, pre-launch (no real tenant traffic on `main` yet), a slice may merge directly and go live immediately without flag-gating — don't pay for flag plumbing and cleanup that has no rollout audience to protect yet. Revisit this once there's real traffic.
+- **Lane ownership is real when ≥2 agents/sessions are actually running in parallel on different lanes** — PLAT = `contracts/ deploy/ scripts/ .github/ Makefile docs/` · CORE = `core/` · WORK = `workers/` · WEB = `web/` · OPSW = `ops-web/`. In that situation, don't edit another lane's directory; write a Ruling instead. Working solo/sequentially (one agent, one story at a time), lane boundaries are advisory context (which doc to read, whose plan owns what), not a hard fence — there's no concurrent writer to protect against.
 - **Frontend never waits.** Build against MSW mocks generated from contracts; the real API is `NEXT_PUBLIC_API_MODE=live`.
 - **Migrations:** one owner per database; reserve the Flyway/goose number in your plan (docs/05 §5).
-- **Integration checkpoint per slice:** `make up FLAGS=<flag>=true && make e2e` green before the flag turns on.
+- **Integration checkpoint per slice, when a flag is actually in play:** `make up FLAGS=<flag>=true && make e2e` green before the flag turns on. Not applicable to a slice that skipped flag-gating per the point above — its own story-level `make lint test docs-check`/`make e2e` gate already covers it.
 
 ## 6. Engineering rules (summary — full text in docs/10)
 
@@ -124,7 +124,7 @@ Known toolchain gotchas (Gradle/JDK, ESLint versions, etc.) that would otherwise
 - [ ] Logs, metrics, traces added for new behavior; no sensitive data in them
 - [ ] docs/ updated in the same PR when behavior, contract or schema changed
 - [ ] Slice partner merged behind the same flag (for slice stories)
-- [ ] Code review done (requesting-code-review), plan kept in docs/plans/
+- [ ] Review done at the depth §4a's track calls for (self-review for trivial, one pass for Track A/B-small, full requesting-code-review chain for Track B), plan kept in docs/plans/
 
 ## 8. Domain glossary (use these names in code)
 
