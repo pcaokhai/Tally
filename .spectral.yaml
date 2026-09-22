@@ -1,0 +1,21 @@
+extends: [[spectral:oas, all]]
+rules:
+  # Both specs are built from one shared components.schemas map in gen_openapi.py
+  # ({**S, **schemas}), so every spec carries schemas the other one uses — this
+  # rule is a structural false positive here.
+  oas3-unused-component: off
+  # `extends: [[spectral:oas, all]]` turns on every oas rule including the
+  # recommended:false ones below. They fire on data not modeled by the
+  # generator (parameter prose, license block) and aren't part of this
+  # story's scope (TLY-003 task 1: operationId + tag + contact only).
+  oas3-parameter-description: off
+  info-license: off
+  license-url: off
+  contact-properties: off
+  tally-operation-id-required:
+    description: Every operation must have an operationId; generators rely on it for every downstream codegen step.
+    severity: error
+    given: "$.paths[*][*]"
+    then:
+      field: operationId
+      function: truthy

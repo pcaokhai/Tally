@@ -15,6 +15,7 @@ contracts:     ## regenerate + validate contracts (TLY-003 adds Spectral/oasdiff
 	python scripts/gen_openapi.py
 	python scripts/gen_events.py
 	python scripts/gen_webhook_vectors.py
+	npx -y @stoplight/spectral-cli@6.16.3 lint --ruleset .spectral.yaml --fail-severity=warn contracts/openapi.yaml contracts/ops-openapi.yaml
 	@git diff --quiet -- contracts/ || { echo "contracts/ changed: commit the regenerated files"; exit 1; }
 gen:           ## server stubs, clients, mocks from contracts (TLY-003)
 	cd core && ./gradlew openApiGenerate
