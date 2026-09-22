@@ -38,6 +38,7 @@ openApiGenerate {
     outputDir.set(openapiGenDir.get().asFile.path)
     apiPackage.set("com.tally.core.api")
     modelPackage.set("com.tally.core.api.model")
+    cleanupOutput.set(true)
     configOptions.set(
         mapOf(
             "interfaceOnly" to "true",
