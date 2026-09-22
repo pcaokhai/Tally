@@ -40,13 +40,13 @@ export function Topbar({
           aria-checked={testMode}
           aria-label="Test mode"
           onClick={() => onTestModeChange(!testMode)}
-          className={`relative h-5 w-9 rounded-[--radius-full] transition-colors duration-[--motion-duration-base] ${
+          className={`relative h-5 w-9 rounded-[--radius-full] transition-colors duration-(--motion-duration-base) ${
             testMode ? "bg-[--color-warn-accent]" : "bg-[--color-line-strong]"
           }`}
         >
           <span
             aria-hidden="true"
-            className="absolute top-0.5 left-0.5 h-4 w-4 rounded-[--radius-full] bg-white transition-transform duration-[--motion-duration-base]"
+            className="absolute top-0.5 left-0.5 h-4 w-4 rounded-[--radius-full] bg-white transition-transform duration-(--motion-duration-base)"
             style={{ transform: testMode ? "translateX(16px)" : "translateX(0)" }}
           />
         </button>

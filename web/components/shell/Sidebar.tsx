@@ -9,7 +9,7 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`flex h-[--layout-nav-item-height] items-center gap-[--spacing-10] rounded-[--radius-md] px-[--spacing-10] text-[length:--text-base] transition-colors duration-[--motion-duration-fast] ${
+      className={`flex h-[--layout-nav-item-height] items-center gap-[--spacing-10] rounded-[--radius-md] px-[--spacing-10] text-[length:--text-base] transition-colors duration-(--motion-duration-fast) ${
         active
           ? "bg-[--color-accent-wash] font-semibold text-[--color-accent-ink]"
           : "text-[--color-ink-muted] hover:bg-[--color-hover]"
