@@ -127,3 +127,8 @@ tasks.register<Test>("archTest") {
     // Same silent-empty risk as integrationTest: renaming the package would void the suite.
     failOnNoDiscoveredTests = true
 }
+
+// Docker-free, so `./gradlew build` can enforce the architecture rules; integrationTest cannot.
+tasks.check {
+    dependsOn(tasks.named("archTest"))
+}

@@ -41,7 +41,11 @@ public final class Http {
         return get(port, path).statusCode();
     }
 
-    /** A port free at this instant; good enough to keep tests off the documented fixed ports. */
+    /**
+     * A port free at this instant; good enough to keep tests off the documented fixed ports.
+     * Closing the socket before Tomcat binds is a known TOCTOU race, accepted in
+     * docs/plans/TLY-004.md R14: asserting three specific distinct ports rules out binding to 0.
+     */
     public static int freePort() {
         try (ServerSocket socket = new ServerSocket(0)) {
             return socket.getLocalPort();
