@@ -10,10 +10,18 @@ SPECS=(contracts/openapi.yaml contracts/ops-openapi.yaml)
 
 OASDIFF=""
 if command -v oasdiff >/dev/null 2>&1; then
-  OASDIFF="$(command -v oasdiff)"
-elif [ -x "$BIN_DIR/oasdiff" ]; then
+  FOUND_VERSION="$(oasdiff --version 2>/dev/null || echo unknown)"
+  if [[ "$FOUND_VERSION" == *"$OASDIFF_VERSION"* ]]; then
+    OASDIFF="$(command -v oasdiff)"
+    echo "oasdiff-gate: using PATH oasdiff ($FOUND_VERSION)"
+  else
+    echo "oasdiff-gate: PATH oasdiff reports '$FOUND_VERSION', not pinned $OASDIFF_VERSION; ignoring it"
+  fi
+fi
+if [ -z "$OASDIFF" ] && [ -x "$BIN_DIR/oasdiff" ]; then
   OASDIFF="$BIN_DIR/oasdiff"
-else
+fi
+if [ -z "$OASDIFF" ]; then
   echo "oasdiff not found; installing ${OASDIFF_VERSION} into $BIN_DIR"
   GOBIN="$BIN_DIR" go install "github.com/oasdiff/oasdiff@${OASDIFF_VERSION}"
   OASDIFF="$BIN_DIR/oasdiff"
