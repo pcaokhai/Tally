@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: oklch(14% 0 0);
+  --color-hairline: oklch(28% 0 0);
+  --color-signal: oklch(75% 0.15 220);
+  --color-danger: oklch(60% 0.22 25);
+  --color-warn: oklch(75% 0.17 80);
+  --color-ok: oklch(65% 0.17 145);
+
+  --font-mono-ops: ui-monospace, "SF Mono", "Menlo", monospace;
+
+  --row-height: 30px;
+  --control-height-sm: 32px;
+  --control-height-lg: 40px;
+  --radius-ops: 2px;
+}
+
+body {
+  background: var(--color-canvas);
+  color: oklch(92% 0 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
