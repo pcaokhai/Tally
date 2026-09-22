@@ -277,6 +277,8 @@ As a tenant developer, I want to register webhook endpoints, so that my systems 
 4. Consuming `webhook_endpoint.auto_disabled` sets status DISABLED, creates an attention item and emails the tenant; `enable` emits an update the dispatcher uses to send a test event.
 5. Plan limit on endpoint count enforced (409 with limit in detail).
 
+> **Follow-up from TLY-004 (ruling R13):** core sets `spring.jackson.default-property-inclusion: non_null` globally so OpenAPI 3.1 response validation doesn't reject legitimate absent-optional fields. `WebhookSecret.overlap_until` is `required` in `contracts/openapi.yaml` — the handler for `rotate_secret` MUST always populate it (never rely on the global setting to paper over a missing value here); a `null` would still violate the schema's `required` constraint even with `non_null` inclusion.
+
 ### TLY-304 Dispatcher consumer and delivery messages
 Lane WORK · 5 pts · Slice — · Depends: TLY-005, TLY-003 · Traces: FR-WH-04, NFR-COR-03, ADR-011
 
@@ -386,6 +388,8 @@ As a tenant admin, I want products with versioned prices, so that price changes 
 3. `GET /v1/products/{id}/prices` returns `subscription_count` per version.
 4. Archiving a price with active subscriptions returns 409 `INVALID_STATE` with the count.
 5. Graduated tiers must be ascending with exactly one open-ended last tier (400 otherwise).
+
+> **Follow-up from TLY-004 (ruling R13):** core sets `spring.jackson.default-property-inclusion: non_null` globally so OpenAPI 3.1 response validation doesn't reject legitimate absent-optional fields. `PriceTier.up_to` is `required` but typed nullable (`["integer", "null"]`) in `contracts/openapi.yaml` — the open-ended last tier (AC5) MUST serialize `up_to` as explicit JSON `null`, not omit the field; `non_null` inclusion only drops fields whose Java value is `null` when the *field itself* isn't otherwise forced — verify the tier DTO always includes `up_to` (e.g. via an explicit `Optional`/boxed-null-safe mapping) rather than relying on Jackson defaults.
 
 ### TLY-402 Products and pricing screen
 Lane WEB · 5 pts · Slice S6 · Depends: TLY-006 · Traces: FR-CAT-01, FR-CAT-04
