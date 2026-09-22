@@ -8,7 +8,9 @@ import { test, expect } from "@playwright/test";
 // This asserts the shell's computed styles are real resolved values, not `initial`.
 
 test("resolves every design token to a real computed value — TLY-006-AC2", async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== "chromium", "one project is enough to prove real values");
+  // Run once per distinct browser engine, not gated to a specific project name (F6) —
+  // a renamed project would otherwise silently drop this coverage.
+  test.skip(testInfo.project.use.reducedMotion === "reduce", "one non-reduced-motion project is enough");
 
   await page.goto("/");
 

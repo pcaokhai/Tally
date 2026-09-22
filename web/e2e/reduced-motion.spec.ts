@@ -12,7 +12,14 @@ test("runs no transform animations under prefers-reduced-motion — TLY-006-AC4"
   page,
   browserName: _browserName,
 }, testInfo) => {
-  test.skip(testInfo.project.name !== "reduced-motion", "only runs under the reduced-motion project");
+  // Gate on the applied config, not the project's string name (F6): a renamed
+  // or typo'd project in playwright.config.ts would otherwise silently skip
+  // both this and the control test below, with `playwright test` still
+  // exiting 0 and reporting green — the same hollow-evidence class as R7.
+  test.skip(
+    testInfo.project.use.reducedMotion !== "reduce",
+    "only runs under a project configured with reducedMotion: reduce",
+  );
 
   await page.goto("/");
   const knob = page.locator('button[role="switch"] > span[aria-hidden="true"]');
@@ -53,7 +60,10 @@ test("runs no transform animations under prefers-reduced-motion — TLY-006-AC4"
 test("runs transform animations when motion is allowed — TLY-006-AC4", async ({
   page,
 }, testInfo) => {
-  test.skip(testInfo.project.name !== "chromium", "control test — default motion project only");
+  test.skip(
+    testInfo.project.use.reducedMotion === "reduce",
+    "control test — only runs under a project without reducedMotion: reduce",
+  );
 
   await page.goto("/");
   const knob = page.locator('button[role="switch"] > span[aria-hidden="true"]');
