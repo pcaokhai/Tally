@@ -6,7 +6,6 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.json.JsonWriter;
 import org.springframework.boot.logging.structured.StructuredLogFormatter;
@@ -18,10 +17,10 @@ import org.springframework.core.env.Environment;
  * {@code service} comes from the MDC and is omitted when the caller has no value for it — a null
  * field would only cost bytes in the log pipeline.
  *
- * <p>Remaining MDC entries follow in sorted order, which is how per-call detail (HTTP method,
- * status, …) reaches the log while messages stay constant (docs/10 §6). The same rule applies to
- * them as to everything else: never put a secret, a token, an unmasked email or a money request body
- * in the MDC — see {@link Mask}.
+ * <p>A short allow-list of extra fields follows, which is how per-call detail (HTTP method, status,
+ * …) reaches the log while messages stay constant (docs/10 §6). Anything else in the MDC is dropped:
+ * the allow-list is the gate that stops a secret, a token or an unmasked email reaching the log
+ * because some future module put it in the MDC — see {@link Mask}.
  *
  * <p>Wired through {@code logging.structured.format.console}; Boot instantiates it with the
  * parameters its own formatters take (see {@code StructuredLogEncoder}).
@@ -31,6 +30,13 @@ public final class TallyStructuredLogFormatter implements StructuredLogFormatter
     /** The docs/02 §7.6 fields carried in the MDC, in the order the document lists them. */
     private static final List<String> MDC_FIELDS =
             List.of("tenant.id", "request_id", "trace_id", "span_id", "actor.type", "actor.id", "event.id");
+
+    /**
+     * The only MDC keys emitted beyond the docs/02 §7.6 set. docs/02 §7.6 is the authority on what a
+     * Tally log line carries: a new field is added here deliberately, with a reviewer, and never by
+     * dropping a key into the MDC and hoping the formatter passes it through.
+     */
+    private static final List<String> ADDITIONAL_ALLOWED_FIELDS = List.of("http.method", "http.path", "http.status");
 
     private static final JsonWriter<Map<String, Object>> JSON =
             JsonWriter.<Map<String, Object>>standard().withNewLineAtEnd();
@@ -60,11 +66,7 @@ public final class TallyStructuredLogFormatter implements StructuredLogFormatter
 
     private static void addContext(Map<String, Object> fields, Map<String, String> mdc) {
         MDC_FIELDS.forEach(field -> putIfPresent(fields, field, mdc.get(field)));
-        new TreeMap<>(mdc).forEach((key, value) -> {
-            if (!MDC_FIELDS.contains(key)) {
-                putIfPresent(fields, key, value);
-            }
-        });
+        ADDITIONAL_ALLOWED_FIELDS.forEach(field -> putIfPresent(fields, field, mdc.get(field)));
     }
 
     private static void putIfPresent(Map<String, Object> fields, String field, @Nullable String value) {

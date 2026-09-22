@@ -47,6 +47,18 @@ class TallyStructuredLogFormatterTest {
     }
 
     @Test
+    void should_drop_mdc_keys_outside_the_allow_list_when_formatting_an_event__TLY_004_AC4() {
+        // A field nobody allow-listed, holding something that must never reach a log. The fake value
+        // proves the gate is the key, not the content: the formatter never inspects the value.
+        Map<String, Object> json =
+                format(event(Map.of("customer.email", "not-a-real-person@example.invalid", "http.path", "/v1/me")));
+
+        assertThat(json).doesNotContainKey("customer.email");
+        assertThat(json.toString()).doesNotContain("not-a-real-person");
+        assertThat(json).containsEntry("http.path", "/v1/me");
+    }
+
+    @Test
     void should_produce_one_line_of_valid_json_when_the_message_contains_quotes__TLY_004_AC4() {
         LoggingEvent event = event(Map.of(), "he said \"no\"\nand left");
 

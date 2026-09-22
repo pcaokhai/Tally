@@ -10,26 +10,26 @@ import org.junit.jupiter.params.provider.ValueSource;
 class MaskTest {
 
     @Test
-    void should_keep_only_the_first_local_character_when_masking_an_email() {
+    void should_keep_only_the_first_local_character_when_masking_an_email__TLY_004_AC4() {
         assertThat(Mask.email("john.doe@example.com")).isEqualTo("j***@example.com");
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "not-an-email", "@example.com", "a@"})
-    void should_mask_entirely_when_the_email_is_absent_or_unparseable(String value) {
+    void should_mask_entirely_when_the_email_is_absent_or_unparseable__TLY_004_AC4(String value) {
         assertThat(Mask.email(value)).isEqualTo("***");
     }
 
     @Test
-    void should_keep_a_prefix_and_the_last_four_characters_when_masking_a_secret() {
+    void should_keep_a_prefix_and_the_last_four_characters_when_masking_a_secret__TLY_004_AC4() {
         assertThat(Mask.secret("sk_live_0123456789abcdef")).isEqualTo("sk_***cdef");
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "short", "1234567"})
-    void should_mask_entirely_when_the_secret_is_absent_or_too_short(String value) {
+    void should_mask_entirely_when_the_secret_is_absent_or_too_short__TLY_004_AC4(String value) {
         assertThat(Mask.secret(value)).isEqualTo("***");
     }
 }
