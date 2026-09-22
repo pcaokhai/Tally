@@ -31,7 +31,8 @@ public class OpsConnectorConfig {
     FilterRegistrationBean<PortScopeFilter> portScopeFilter(OpsServerProperties properties) {
         FilterRegistrationBean<PortScopeFilter> registration =
                 new FilterRegistrationBean<>(new PortScopeFilter(properties.port()));
-        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        // Just behind RequestContextConfig, so a rejected wrong-port request is still logged with ids.
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE + 10);
         return registration;
     }
 }

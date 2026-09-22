@@ -11,6 +11,13 @@ spring:
     virtual:
       enabled: true
 
+logging:
+  structured:
+    format:
+      # docs/02 §7.6 field set. Lives here, not in application.yaml, so tests log the same JSON the
+      # shipped app does; src/test/resources/application.yaml would otherwise shadow it.
+      console: com.tally.core.kernel.logging.TallyStructuredLogFormatter
+
 server:
   # Tenant API (/v1).
   port: 8080
