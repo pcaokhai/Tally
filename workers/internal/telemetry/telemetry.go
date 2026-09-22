@@ -78,8 +78,8 @@ func Setup(ctx context.Context, o Options) (shutdown func(context.Context) error
 	otel.SetMeterProvider(mp)
 
 	var once sync.Once
+	var shutdownErr error
 	return func(ctx context.Context) error {
-		var shutdownErr error
 		once.Do(func() {
 			shutdownErr = errors.Join(tp.Shutdown(ctx), mp.Shutdown(ctx))
 		})

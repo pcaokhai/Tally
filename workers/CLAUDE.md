@@ -20,6 +20,7 @@ go run ./cmd/dispatcher  |  go run ./cmd/aggregator
 cmd/dispatcher/main.go      wiring only: config → deps → run → graceful shutdown
 cmd/aggregator/main.go
 internal/
+  app/           graceful shutdown runner: runs one intake func, stops it on ctx cancellation, bounded wait (TLY-005)
   config/        typed env config, validated at startup (fail fast)
   events/        generated types from contracts/events (read-only)
   consumer/      franz-go consumer: persist DeliveryMessage, then commit offset (ADR-011)
@@ -32,6 +33,8 @@ internal/
   api/           internal REST for the core proxy (deliveries, replay, health buckets, fleet, SSE fan-out)
   rollup/        tumbling 5-min windows, watermark, late-event policy, dedup by event_id (aggregator)
   telemetry/     OTel tracer/meter setup, slog JSON handler
+lint/            AC4 depguard enforcement test
+example/domain/  TLY-005 AC4 depguard lint fixture — do not delete, it disarms AC4's enforcement test
 ```
 
 ## Go 1.27 rules

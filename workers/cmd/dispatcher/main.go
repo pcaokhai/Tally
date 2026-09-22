@@ -8,11 +8,16 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/pcaokhai/tally/workers/internal/app"
 	"github.com/pcaokhai/tally/workers/internal/config"
 	"github.com/pcaokhai/tally/workers/internal/telemetry"
 )
+
+// telemetryFlushTimeout bounds the deferred telemetry shutdown so a hung
+// intake plus an unreachable collector cannot together exceed AC3's 30 s.
+const telemetryFlushTimeout = 5 * time.Second
 
 func main() {
 	if err := run(); err != nil {
@@ -39,7 +44,7 @@ func run() error {
 		return err
 	}
 	defer func() {
-		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), cfg.ShutdownTimeout)
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), telemetryFlushTimeout)
 		defer cancel()
 		if err := shutdownTelemetry(shutdownCtx); err != nil {
 			fmt.Fprintf(os.Stderr, "dispatcher: telemetry shutdown: %v\n", err)

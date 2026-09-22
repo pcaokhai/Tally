@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestSetup_withoutEndpointStillReturnsShutdown__TLY_005_AC3(t *testing.T) {
+func TestSetup_withoutEndpointStillReturnsShutdown__TLY_005_AC1(t *testing.T) {
 	shutdown, err := Setup(context.Background(), Options{ServiceName: "x", LogLevel: "info"})
 	if err != nil {
 		t.Fatalf("Setup returned error: %v", err)
@@ -21,7 +21,7 @@ func TestSetup_withoutEndpointStillReturnsShutdown__TLY_005_AC3(t *testing.T) {
 	}
 }
 
-func TestSetup_rejectsUnknownLogLevel__TLY_005_AC2(t *testing.T) {
+func TestSetup_rejectsUnknownLogLevel__TLY_005_AC1(t *testing.T) {
 	_, err := Setup(context.Background(), Options{ServiceName: "x", LogLevel: "shouty"})
 	if err == nil {
 		t.Fatal("expected error for unknown log level, got nil")
