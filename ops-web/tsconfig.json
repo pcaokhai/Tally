@@ -35,7 +35,6 @@
     "components",
     "lib",
     "mocks",
-    "src",
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
