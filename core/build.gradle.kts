@@ -28,10 +28,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.modulith:spring-modulith-starter-core")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
+    // Boot 4 keeps Flyway auto-configuration in this module; flyway-core alone is never auto-configured.
+    implementation("org.springframework.boot:spring-boot-flyway")
+    runtimeOnly(libs.flyway.database.postgresql)
+    runtimeOnly(libs.postgresql)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation(libs.archunit)
     testImplementation(libs.spring.modulith.starter.test)
+    testImplementation(libs.testcontainers.junit.jupiter)
+    testImplementation(libs.testcontainers.kafka)
+    testImplementation(libs.testcontainers.postgresql)
 }
 
 openApiGenerate {
@@ -92,6 +101,8 @@ tasks.register<Test>("integrationTest") {
     useJUnitPlatform {
         includeTags("integration")
     }
+    // An integration test that loses its @Tag("integration") would otherwise empty this suite silently.
+    failOnNoDiscoveredTests = true
 }
 
 tasks.register<Test>("archTest") {
@@ -103,4 +114,6 @@ tasks.register<Test>("archTest") {
     filter {
         includeTestsMatching("com.tally.core.architecture.*")
     }
+    // Same silent-empty risk as integrationTest: renaming the package would void the suite.
+    failOnNoDiscoveredTests = true
 }

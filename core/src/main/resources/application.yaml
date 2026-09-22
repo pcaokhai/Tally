@@ -4,3 +4,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  datasource:
+    # Defaults point at the TLY-002 compose stack; never commit a real password here.
+    url: jdbc:postgresql://${TALLY_DB_HOST:localhost}:${TALLY_DB_PORT:5432}/${TALLY_DB_NAME:tally}
+    username: ${TALLY_DB_USER:postgres}
+    password: ${TALLY_DB_PASSWORD:postgres}
+  flyway:
+    enabled: true
