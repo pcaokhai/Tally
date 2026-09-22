@@ -7,12 +7,16 @@
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "gen": "echo 'openapi-typescript client generation lands with TLY-003' && exit 0"
+    "gen": "openapi-typescript ../contracts/openapi.yaml -o lib/api/generated/schema.d.ts && python3 ../scripts/gen_msw_handlers.py ../contracts/openapi.yaml lib/api/generated/msw-handlers.ts"
   },
   "devDependencies": {
     "@typescript-eslint/parser": "^8.15.0",
     "eslint": "^8.57.0",
+    "openapi-typescript": "7.13.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.5"
+  },
+  "dependencies": {
+    "msw": "2.15.0"
   }
 }
