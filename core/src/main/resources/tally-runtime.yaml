@@ -10,6 +10,10 @@ spring:
   threads:
     virtual:
       enabled: true
+  jackson:
+    # contracts/openapi.yaml is OpenAPI 3.1: an absent optional property is legal, an explicit null
+    # for `type: string` is not. Serializing nulls makes every response off-contract (TLY-004 AC5).
+    default-property-inclusion: non_null
 
 logging:
   structured:

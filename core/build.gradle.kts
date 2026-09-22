@@ -36,8 +36,11 @@ dependencies {
     runtimeOnly(libs.postgresql)
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    // Boot 4 moved MockMvc's test slice out of spring-boot-starter-test into its own module.
+    testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation(libs.archunit)
+    testImplementation(libs.openapi.request.validator.spring.webmvc)
     testImplementation(libs.spring.modulith.starter.test)
     testImplementation(libs.testcontainers.junit.jupiter)
     testImplementation(libs.testcontainers.kafka)
@@ -86,6 +89,12 @@ spotless {
         trimTrailingWhitespace()
         endWithNewline()
     }
+}
+
+// contracts/ lives outside this Gradle project, so tests are told where it is instead of guessing
+// from the working directory.
+tasks.withType<Test>().configureEach {
+    systemProperty("tally.contracts.openapi", rootDir.resolve("../contracts/openapi.yaml").path)
 }
 
 tasks.test {

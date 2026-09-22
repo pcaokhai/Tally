@@ -13,7 +13,8 @@ spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies"
 spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "springModulith" }
 archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit" }
 spring-modulith-starter-test = { module = "org.springframework.modulith:spring-modulith-starter-test" }
-swagger-request-validator-spring-webmvc = { module = "com.atlassian.oai:swagger-request-validator-spring-webmvc", version.ref = "swaggerRequestValidator" }
+# 3.0.0 renamed the artifact: com.atlassian.oai:swagger-request-validator-* is now a relocation POM.
+openapi-request-validator-spring-webmvc = { module = "com.atlassian.oai:openapi-request-validator-spring-webmvc", version.ref = "swaggerRequestValidator" }
 # Versions below are supplied by the Spring Boot BOM; never pin them here.
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
 flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
