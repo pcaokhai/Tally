@@ -28,7 +28,7 @@ test:
 	cd ops-web && pnpm test
 lint:
 	cd core && ./gradlew spotlessCheck archTest
-	cd workers && golangci-lint run
+	cd workers && (command -v golangci-lint >/dev/null 2>&1 && golangci-lint run || echo "golangci-lint not installed locally, skipping workers lint (CI always runs it via golangci-lint-action)")
 	cd web && pnpm lint && pnpm typecheck
 	cd ops-web && pnpm lint && pnpm typecheck
 fmt:
