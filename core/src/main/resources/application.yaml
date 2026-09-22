@@ -1,9 +1,6 @@
 spring:
-  application:
-    name: tally-core
-  threads:
-    virtual:
-      enabled: true
+  config:
+    import: "classpath:/tally-runtime.yaml"
   datasource:
     # Defaults point at the TLY-002 compose stack; never commit a real password here.
     url: jdbc:postgresql://${TALLY_DB_HOST:localhost}:${TALLY_DB_PORT:5432}/${TALLY_DB_NAME:tally}

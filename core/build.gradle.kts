@@ -27,6 +27,7 @@ dependencyManagement {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation(libs.spring.boot.starter.actuator)
     implementation("org.springframework.modulith:spring-modulith-starter-core")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     // Boot 4 keeps Flyway auto-configuration in this module; flyway-core alone is never auto-configured.

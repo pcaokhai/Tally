@@ -1,0 +1,34 @@
+# Shipped runtime defaults: ports (docs/02 §8, ADR-022) and virtual threads.
+#
+# These live outside application.yaml because src/test/resources/application.yaml shadows the main
+# one on the test classpath (same name, test output first). Both files `spring.config.import` this
+# one, so tests run against the real values instead of a copy that can drift. Only the datasource
+# and Flyway stay in application.yaml, because that is exactly what the tests turn off.
+spring:
+  application:
+    name: tally-core
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  # Tenant API (/v1).
+  port: 8080
+
+management:
+  server:
+    # Actuator only; it never serves /v1 or /ops/v1.
+    port: 8082
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+tally:
+  ops:
+    # Operator API (/ops/v1); bound to the ops network only in deployment.
+    port: 8081
