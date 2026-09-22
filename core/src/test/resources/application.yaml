@@ -1,0 +1,13 @@
+# Keeps the unit `test` task runnable without Docker: no DataSource, no Flyway. Both class names
+# were verified against the Boot 4.1.1 jars that now ship them (spring-boot-jdbc, spring-boot-flyway).
+# PostgresKafkaIT undoes this with an empty spring.autoconfigure.exclude so integration tests migrate.
+#
+# This file shadows src/main/resources/application.yaml on the test classpath, so it imports the
+# shipped runtime defaults explicitly — tests must see the real ports and virtual-thread setting.
+spring:
+  config:
+    import: "classpath:/tally-runtime.yaml"
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration

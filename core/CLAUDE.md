@@ -7,7 +7,7 @@ The billing core: a Spring Boot 4 modular monolith (Java 25) that owns tenants, 
 ```
 ./gradlew build                    compile + unit tests + Spotless check
 ./gradlew test                     unit tests (no Docker)
-./gradlew integrationTest          Testcontainers: Postgres, Kafka, Redis, Keycloak
+./gradlew integrationTest          Testcontainers: Postgres + Kafka today (Redis, Keycloak when a story needs them)
 ./gradlew spotlessApply            format
 ./gradlew archTest                 ArchUnit + Spring Modulith verify (also part of build)
 ./gradlew bootRun --args='--spring.profiles.active=local'
