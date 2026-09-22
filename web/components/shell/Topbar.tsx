@@ -8,8 +8,8 @@ export function Topbar({
   onTestModeChange: (next: boolean) => void;
 }) {
   return (
-    <header className="flex h-[--layout-topbar-height] shrink-0 items-center justify-between border-b border-[--color-line] bg-[--color-surface] px-[--spacing-32]">
-      <label className="flex h-[42px] w-[440px] items-center gap-[--spacing-10] rounded-[--radius-lg] border border-[--color-line-strong] bg-[--color-raised] px-[--spacing-14]">
+    <header className="flex h-(--layout-topbar-height) shrink-0 items-center justify-between border-b border-(--color-line) bg-(--color-surface) px-(--spacing-32)">
+      <label className="flex h-[42px] w-[440px] items-center gap-(--spacing-10) rounded-(--radius-lg) border border-(--color-line-strong) bg-(--color-raised) px-(--spacing-14)">
         <span className="sr-only">Search</span>
         <svg
           width="16"
@@ -26,27 +26,27 @@ export function Topbar({
         <input
           type="search"
           placeholder="Search customers, invoices, payments…"
-          className="flex-1 bg-transparent text-[length:--text-base] outline-none"
+          className="flex-1 bg-transparent text-(length:--text-base) outline-none"
         />
-        <kbd className="rounded-[--radius-sm] bg-[--color-hover] px-[--spacing-6] font-[family-name:--font-geist-mono] text-[length:--text-xs] text-[--color-ink-subtle]">
+        <kbd className="rounded-(--radius-sm) bg-(--color-hover) px-(--spacing-6) font-(family-name:--font-geist-mono) text-(length:--text-xs) text-(--color-ink-subtle)">
           ⌘K
         </kbd>
       </label>
 
-      <div className="flex items-center gap-[--spacing-12]">
+      <div className="flex items-center gap-(--spacing-12)">
         <button
           type="button"
           role="switch"
           aria-checked={testMode}
           aria-label="Test mode"
           onClick={() => onTestModeChange(!testMode)}
-          className={`relative h-5 w-9 rounded-[--radius-full] transition-colors duration-(--motion-duration-base) ${
-            testMode ? "bg-[--color-warn-accent]" : "bg-[--color-line-strong]"
+          className={`relative h-5 w-9 rounded-(--radius-full) transition-colors duration-(--motion-duration-base) ${
+            testMode ? "bg-(--color-warn-accent)" : "bg-(--color-line-strong)"
           }`}
         >
           <span
             aria-hidden="true"
-            className="absolute top-0.5 left-0.5 h-4 w-4 rounded-[--radius-full] bg-white transition-transform duration-(--motion-duration-base)"
+            className="absolute top-0.5 left-0.5 h-4 w-4 rounded-(--radius-full) bg-white transition-transform duration-(--motion-duration-base)"
             style={{ transform: testMode ? "translateX(16px)" : "translateX(0)" }}
           />
         </button>
@@ -54,7 +54,7 @@ export function Topbar({
         <button
           type="button"
           aria-label="Notifications, 4 unread"
-          className="relative flex h-[42px] w-[42px] items-center justify-center rounded-[--radius-md] hover:bg-[--color-hover]"
+          className="relative flex h-[42px] w-[42px] items-center justify-center rounded-(--radius-md) hover:bg-(--color-hover)"
         >
           <svg
             width="18"
@@ -70,11 +70,11 @@ export function Topbar({
           </svg>
           <span
             aria-hidden="true"
-            className="absolute right-2 top-2 h-2 w-2 rounded-full bg-[--color-danger] ring-2 ring-[--color-raised]"
+            className="absolute right-2 top-2 h-2 w-2 rounded-full bg-(--color-danger) ring-2 ring-(--color-raised)"
           />
         </button>
 
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[--color-ink] text-[length:--text-sm-plus] font-semibold text-[--color-on-ink]">
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-(--color-ink) text-(length:--text-sm-plus) font-semibold text-(--color-on-ink)">
           LN
         </span>
       </div>

@@ -1,6 +1,6 @@
 export function TestModeBanner() {
   return (
-    <div className="flex h-[--layout-test-band-height] items-center gap-[--spacing-8] border-b border-[--color-warn-line] bg-[--color-warn-bg] px-[--spacing-32] text-[length:--text-sm] text-[--color-warn-ink]">
+    <div className="flex h-(--layout-test-band-height) items-center gap-(--spacing-8) border-b border-(--color-warn-line) bg-(--color-warn-bg) px-(--spacing-32) text-(length:--text-sm) text-(--color-warn-ink)">
       <svg
         width="14"
         height="14"

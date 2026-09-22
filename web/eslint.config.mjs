@@ -16,6 +16,16 @@ const rawValueBan = {
           "Raw hex colors are banned in components. Use a token from lib/tokens.ts or app/globals.css.",
       },
       {
+        selector: "Literal[value=/\\b(rgb|rgba|hsl|hsla|oklch)\\(/]",
+        message:
+          "Raw functional colors are banned in components. Use a token from lib/tokens.ts or app/globals.css.",
+      },
+      {
+        selector: "TemplateElement[value.raw=/\\b(rgb|rgba|hsl|hsla|oklch)\\(/]",
+        message:
+          "Raw functional colors are banned in components. Use a token from lib/tokens.ts or app/globals.css.",
+      },
+      {
         selector: "Literal[value=/\\b\\d+(\\.\\d+)?m?s\\b/]",
         message:
           "Raw CSS durations are banned in components. Use a token from lib/motion.ts.",
@@ -34,6 +44,13 @@ const rawValueBan = {
         selector: "TemplateElement[value.raw=/cubic-bezier\\(/]",
         message:
           "Raw easing functions are banned in components. Use a token from lib/motion.ts.",
+      },
+      {
+        selector: "Literal[value=/\\[[a-zA-Z-]*:?--[a-zA-Z0-9-]+\\]/]",
+        message:
+          "Tailwind bracket syntax on a bare custom property compiles to an invalid literal " +
+          "(e.g. `height: --foo`), not `var(--foo)` — use the parenthesis form instead, e.g. " +
+          "`h-(--layout-topbar-height)` not `h-[--layout-topbar-height]` (see ruling R7).",
       },
     ],
   },
