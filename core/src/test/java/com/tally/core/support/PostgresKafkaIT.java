@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.kafka.ConfluentKafkaContainer;
+import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
@@ -22,13 +22,16 @@ public abstract class PostgresKafkaIT {
 
     protected static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-09-22T07:00:00Z"), ZoneOffset.UTC);
 
-    @ServiceConnection
-    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17-alpine").withReuse(true);
+    /** Container images, kept together so the tech lead can retune them in one place. */
+    private static final String POSTGRES_IMAGE = "postgres:17-alpine";
 
-    // ConfluentKafkaContainer, not the apache/kafka one: on this stack the apache/kafka image
-    // starts with advertised.listeners = 0.0.0.0 and the broker refuses to boot.
-    static final ConfluentKafkaContainer KAFKA =
-            new ConfluentKafkaContainer("confluentinc/cp-kafka:7.8.0").withReuse(true);
+    /** Matches the broker pinned in {@code deploy/compose.yaml} (TLY-002). */
+    private static final String KAFKA_IMAGE = "apache/kafka:4.1.0";
+
+    @ServiceConnection
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer(POSTGRES_IMAGE).withReuse(true);
+
+    static final KafkaContainer KAFKA = new KafkaContainer(KAFKA_IMAGE).withReuse(true);
 
     static {
         POSTGRES.start();
