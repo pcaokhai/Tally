@@ -1,0 +1,18 @@
+name: pr-title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  pr-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require a TLY-nnn story id in the PR title
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "$TITLE" | grep -Eq '(^|[^A-Z0-9])TLY-[0-9]{3,}([^0-9]|$)' || {
+            echo "PR title must contain a story id like TLY-001. Got: $TITLE"
+            exit 1
+          }

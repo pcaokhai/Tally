@@ -1,0 +1,154 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      plat: ${{ steps.filter.outputs.plat }}
+      core: ${{ steps.filter.outputs.core }}
+      work: ${{ steps.filter.outputs.work }}
+      web: ${{ steps.filter.outputs.web }}
+      opsw: ${{ steps.filter.outputs.opsw }}
+      contracts: ${{ steps.filter.outputs.contracts }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            plat:
+              - 'Makefile'
+              - '.tool-versions'
+              - 'scripts/**'
+              - 'deploy/**'
+              - '.github/**'
+            core:
+              - 'core/**'
+            work:
+              - 'workers/**'
+            web:
+              - 'web/**'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+            opsw:
+              - 'ops-web/**'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
+            contracts:
+              - 'contracts/**'
+              - 'scripts/gen_openapi.py'
+              - 'scripts/gen_events.py'
+              - 'scripts/gen_webhook_vectors.py'
+
+  core:
+    needs: changes
+    if: needs.changes.outputs.core == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Java version
+        id: tv
+        run: echo "java=$(grep '^java ' .tool-versions | cut -d' ' -f2 | cut -d. -f1)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ steps.tv.outputs.java }}
+      - run: cd core && ./gradlew spotlessCheck archTest
+      - run: cd core && ./gradlew test integrationTest
+
+  work:
+    needs: changes
+    if: needs.changes.outputs.work == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Go version
+        id: tv
+        run: echo "go=$(grep '^golang ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.tv.outputs.go }}
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          working-directory: workers
+      - run: cd workers && go build ./... && go test -race ./...
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Node/pnpm versions
+        id: tv
+        run: |
+          echo "node=$(grep '^nodejs ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+          echo "pnpm=$(grep '^pnpm ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.tv.outputs.pnpm }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.tv.outputs.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web lint && pnpm --filter web typecheck
+      - run: pnpm --filter web test
+
+  opsw:
+    needs: changes
+    if: needs.changes.outputs.opsw == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Read Node/pnpm versions
+        id: tv
+        run: |
+          echo "node=$(grep '^nodejs ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+          echo "pnpm=$(grep '^pnpm ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ steps.tv.outputs.pnpm }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.tv.outputs.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter ops-web lint && pnpm --filter ops-web typecheck
+      - run: pnpm --filter ops-web test
+
+  contracts:
+    needs: changes
+    if: needs.changes.outputs.contracts == 'true' || needs.changes.outputs.plat == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: make contracts
+
+  docs-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      - run: make docs-check
+
+  gitleaks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
