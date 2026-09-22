@@ -48,6 +48,32 @@ test("the inline bootstrap scripts carry the CSP nonce — TLY-007-AC3", async (
   }
 });
 
+test("the environment badge and sidebar render on the server for a console page — TLY-007-AC2", async ({
+  request,
+}) => {
+  const response = await request.get("/");
+  const html = await response.text();
+  // The badge must exist in the delivered markup, not only after hydration: gating the
+  // tree on a client-side condition once left every page with an empty <body>.
+  expect(html).toContain('role="status"');
+  expect(html).toContain('aria-label="Operator console"');
+});
+
+test("an unknown console section 404s and still shows the badge — TLY-007-AC2", async ({
+  page,
+}) => {
+  const response = await page.goto("/definitely-not-a-section");
+  expect(response?.status()).toBe(404);
+  // Next renders the not-found route on the client, so assert against the live DOM.
+  // Exactly one of each: nesting the root not-found inside the console layout once
+  // produced two badges and two sidebars.
+  await expect(page.getByRole("status")).toHaveCount(1);
+  await expect(page.getByRole("status")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Operator console" }),
+  ).toHaveCount(1);
+});
+
 test("the console hydrates under the strict CSP — TLY-007-AC2", async ({ page }) => {
   const consoleMessages: string[] = [];
   const pageErrors: string[] = [];
