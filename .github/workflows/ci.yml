@@ -126,12 +126,27 @@ jobs:
     needs: changes
     if: needs.changes.outputs.contracts == 'true' || needs.changes.outputs.plat == 'true'
     runs-on: ubuntu-latest
+    env:
+      BREAKING_APPROVED: ${{ contains(github.event.pull_request.labels.*.name, 'breaking-approved') && '1' || '0' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install pyyaml jsonschema
+      - name: Read Node/Go versions
+        id: tv
+        run: |
+          echo "node=$(grep '^nodejs ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+          echo "go=$(grep '^golang ' .tool-versions | cut -d' ' -f2)" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.tv.outputs.node }}
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ steps.tv.outputs.go }}
       - run: make contracts
 
   docs-check:
