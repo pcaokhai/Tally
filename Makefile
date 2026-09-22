@@ -40,6 +40,7 @@ fmt:
 	cd ops-web && pnpm prettier --write .
 e2e:           ## Playwright journeys (docs/08 §5)
 	cd web && pnpm test:e2e $(ARGS)
+	cd ops-web && pnpm test:e2e $(ARGS)   # operator console CSP + shell checks (TLY-007)
 load:          ## k6 smoke (TLY-902)
 	k6 run deploy/k6/smoke.js
 chaos:         ## chaos suite (TLY-903)
