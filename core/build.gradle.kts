@@ -1,5 +1,8 @@
 plugins {
     java
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    alias(libs.plugins.spotless)
     alias(libs.plugins.openapi.generator)
 }
 
@@ -15,20 +18,18 @@ repositories {
 
 val openapiGenDir = layout.buildDirectory.dir("generated/openapi")
 
-// TLY-004 replaces these individually pinned deps with the Spring Boot BOM.
-dependencies {
-    implementation(libs.spring.web)
-    implementation(libs.spring.context)
-    implementation(libs.spring.core)
-    implementation(libs.jakarta.servlet.api)
-    implementation(libs.jakarta.validation.api)
-    implementation(libs.jakarta.annotation.api)
-    implementation(libs.jackson.annotations)
-    implementation(libs.jackson.databind)
+dependencyManagement {
+    imports {
+        mavenBom(libs.spring.modulith.bom.get().toString())
+    }
+}
 
-    testImplementation(platform("org.junit:junit-bom:5.11.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+dependencies {
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.modulith:spring-modulith-starter-core")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
 }
 
 openApiGenerate {
@@ -64,27 +65,34 @@ tasks.compileJava {
     dependsOn(tasks.openApiGenerate)
 }
 
-tasks.test {
-    useJUnitPlatform()
+spotless {
+    java {
+        target("src/**/*.java")
+        targetExclude("build/generated/**")
+        palantirJavaFormat()
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
 }
 
-tasks.register("integrationTest") {
+tasks.test {
+    useJUnitPlatform {
+        excludeTags("integration")
+    }
+}
+
+tasks.register<Test>("integrationTest") {
     group = "verification"
-    description = "Placeholder until TLY-004 adds Testcontainers integration tests."
-    dependsOn(tasks.test)
+    description = "Tests tagged 'integration' (Testcontainers; Docker required)."
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform {
+        includeTags("integration")
+    }
 }
 
 tasks.register("archTest") {
     group = "verification"
-    description = "Placeholder until TLY-004 adds Spring Modulith verify() and ArchUnit rules."
-}
-
-tasks.register("spotlessCheck") {
-    group = "verification"
-    description = "Placeholder until TLY-004 adds the Spotless plugin."
-}
-
-tasks.register("spotlessApply") {
-    group = "formatting"
-    description = "Placeholder until TLY-004 adds the Spotless plugin."
+    description = "Placeholder until TLY-004 Task 2 adds Spring Modulith verify() and ArchUnit rules."
 }

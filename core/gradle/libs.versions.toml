@@ -1,25 +1,21 @@
 [versions]
 java = "25"
 openapiGeneratorPlugin = "7.14.0"
-# Pinned individually until TLY-004 replaces these with the Spring Boot BOM.
-springWeb = "6.2.1"
-springContext = "6.2.1"
-springCore = "6.2.1"
-jakartaServletApi = "6.1.0"
-jakartaValidationApi = "3.1.1"
-jakartaAnnotationApi = "3.0.0"
-jacksonAnnotations = "2.18.2"
-jacksonDatabind = "2.18.2"
+springBoot = "4.1.1"
+springDependencyManagement = "1.1.7"
+springModulith = "2.1.1"
+archunit = "1.5.0"
+spotless = "8.10.2"
+swaggerRequestValidator = "3.0.0"
 
 [libraries]
-spring-web = { module = "org.springframework:spring-web", version.ref = "springWeb" }
-spring-context = { module = "org.springframework:spring-context", version.ref = "springContext" }
-spring-core = { module = "org.springframework:spring-core", version.ref = "springCore" }
-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version.ref = "jakartaServletApi" }
-jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakartaValidationApi" }
-jakarta-annotation-api = { module = "jakarta.annotation:jakarta.annotation-api", version.ref = "jakartaAnnotationApi" }
-jackson-annotations = { module = "com.fasterxml.jackson.core:jackson-annotations", version.ref = "jacksonAnnotations" }
-jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jacksonDatabind" }
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "springBoot" }
+spring-modulith-bom = { module = "org.springframework.modulith:spring-modulith-bom", version.ref = "springModulith" }
+archunit = { module = "com.tngtech.archunit:archunit", version.ref = "archunit" }
+swagger-request-validator-spring-webmvc = { module = "com.atlassian.oai:swagger-request-validator-spring-webmvc", version.ref = "swaggerRequestValidator" }
 
 [plugins]
 openapi-generator = { id = "org.openapi.generator", version.ref = "openapiGeneratorPlugin" }
+spring-boot = { id = "org.springframework.boot", version.ref = "springBoot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "springDependencyManagement" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

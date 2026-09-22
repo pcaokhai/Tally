@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: tally-core
+  threads:
+    virtual:
+      enabled: true

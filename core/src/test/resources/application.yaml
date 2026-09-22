@@ -1,0 +1,8 @@
+# TLY-004 Task 3 removes these exclusions once Testcontainers provide a real Postgres.
+# No JDBC/Flyway starter is on the classpath yet, so Boot ignores these entries today;
+# Task 3 must confirm the class names against the Boot 4 modules it adds before relying on them.
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
