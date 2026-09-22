@@ -13,7 +13,7 @@ Multi-tenant payments and billing platform: subscriptions, usage-based pricing, 
 ## Start here
 
 1. Read `CLAUDE.md`, then `docs/README.md` for the reading order.
-2. Prerequisites: Docker, JDK 25, Go 1.27, Node LTS + pnpm, Python 3.12 (contract generators).
+2. Prerequisites: Docker, JDK 25, Go 1.27, Node LTS + pnpm, Python 3.12 (contract generators), golangci-lint (`make lint` for `workers/`).
 3. `make up && make seed` (available after TLY-001..003, Sprint 0).
 4. Sprint plan: `docs/07-delivery-plan.md`. Stories: `docs/06-user-stories.md`.
 
