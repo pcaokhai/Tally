@@ -32,3 +32,37 @@ test("the served page has no off-origin script sources — TLY-007-AC3", async (
     expect(src.startsWith(origin) || src.startsWith("/")).toBe(true);
   }
 });
+
+test("the inline bootstrap scripts carry the CSP nonce — TLY-007-AC3", async ({ request }) => {
+  const response = await request.get("/");
+  const csp = response.headers()["content-security-policy"] ?? "";
+  const nonceMatch = csp.match(/'nonce-([^']+)'/);
+  expect(nonceMatch).not.toBeNull();
+  const nonce = nonceMatch?.[1];
+
+  const html = await response.text();
+  const inlineScripts = [...html.matchAll(/<script(?![^>]*\bsrc=)([^>]*)>/g)];
+  expect(inlineScripts.length).toBeGreaterThan(0);
+  for (const [, attrs] of inlineScripts) {
+    expect(attrs).toContain(`nonce="${nonce}"`);
+  }
+});
+
+test("the console hydrates under the strict CSP — TLY-007-AC2", async ({ page }) => {
+  const consoleMessages: string[] = [];
+  const pageErrors: string[] = [];
+  page.on("console", (msg) => consoleMessages.push(msg.text()));
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+
+  await page.goto("/");
+
+  const timer = page.getByText(/^\d{2}:\d{2}$/);
+  const firstReading = await timer.textContent();
+  await page.waitForTimeout(1500);
+  const secondReading = await timer.textContent();
+
+  expect(pageErrors).toEqual([]);
+  const cspViolations = consoleMessages.filter((m) => /content security policy|refused to/i.test(m));
+  expect(cspViolations).toEqual([]);
+  expect(secondReading).not.toBe(firstReading);
+});

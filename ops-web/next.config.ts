@@ -4,7 +4,7 @@ import { buildSecurityHeaders } from "./lib/csp";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   async headers() {
-    const headers = buildSecurityHeaders({ isProduction: process.env.NODE_ENV === "production" });
+    const headers = buildSecurityHeaders();
     return [
       {
         source: "/(.*)",
