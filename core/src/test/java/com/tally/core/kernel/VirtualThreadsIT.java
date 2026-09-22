@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -22,6 +24,13 @@ import org.springframework.web.bind.annotation.RestController;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(VirtualThreadsIT.ThreadProbeController.class)
 class VirtualThreadsIT {
+
+    private static final int OPS_PORT = Http.freePort();
+
+    @DynamicPropertySource
+    static void opsPort(DynamicPropertyRegistry registry) {
+        registry.add("tally.ops.port", () -> OPS_PORT);
+    }
 
     private final int port;
 
