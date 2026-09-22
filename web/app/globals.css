@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  /* colors */
+  --color-ground: #f7f6f3;
+  --color-surface: #fbfaf8;
+  --color-raised: #ffffff;
+  --color-ink: #16161a;
+  --color-ink-muted: #3d3b44;
+  --color-ink-subtle: #5e5c66;
+  --color-ink-faint: #6b6973;
+  --color-line: #e7e5e0;
+  --color-line-strong: #e2e0da;
+  --color-hover: #efede8;
+  --color-hover-soft: #f1efea;
+  --color-row-hover: #faf9f6;
+  --color-accent: #4b3fd1;
+  --color-accent-hover: #3f33c4;
+  --color-accent-ink: #3a2fb8;
+  --color-accent-wash: #eeebff;
+  --color-accent-soft: #9c92f5;
+  --color-warn-bg: #fdf1de;
+  --color-warn-ink: #7a4500;
+  --color-warn-line: #f3ddb5;
+  --color-warn-accent: #e39a2d;
+  --color-danger: #d9432f;
+  --color-success-bg: #e2f0ea;
+  --color-success-ink: #0f6b45;
+  --color-on-accent: #ffffff;
+  --color-on-ink: #fbfaf8;
+
+  /* fonts */
+  --font-geist: var(--font-geist);
+  --font-geist-mono: var(--font-geist-mono);
+  --font-serif: var(--font-serif);
+
+  /* type scale */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-sm-plus: 12.5px;
+  --text-base: 13.5px;
+  --text-body: 14px;
+  --text-body-lg: 14.5px;
+  --text-lg: 17px;
+  --text-xl: 20px;
+  --text-2xl: 26px;
+  --text-3xl: 30px;
+  --text-display: 40px;
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.01em;
+
+  /* radii */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 14px;
+  --radius-full: 999px;
+
+  /* spacing (4px-based scale) */
+  --spacing-2: 2px;
+  --spacing-4: 4px;
+  --spacing-6: 6px;
+  --spacing-8: 8px;
+  --spacing-10: 10px;
+  --spacing-12: 12px;
+  --spacing-14: 14px;
+  --spacing-16: 16px;
+  --spacing-18: 18px;
+  --spacing-20: 20px;
+  --spacing-24: 24px;
+  --spacing-28: 28px;
+  --spacing-32: 32px;
+
+  /* layout constants */
+  --layout-sidebar-width: 240px;
+  --layout-topbar-height: 64px;
+  --layout-test-band-height: 34px;
+  --layout-nav-item-height: 38px;
+
+  /* motion durations + easings (docs/02 §7.8) */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* shadows */
+  --shadow-card-hover: 0 12px 28px -16px rgba(22, 22, 26, 0.28);
+  --shadow-accent-raise:
+    0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 6px 16px -8px rgba(75, 63, 209, 0.8);
+}
+
+/* Motion tokens without a Tailwind theme namespace (docs/02 §7.8) — plain
+   custom properties, consumed via lib/motion.ts / var(--motion-*). */
+:root {
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 350ms;
+  --motion-spring-soft-stiffness: 260;
+  --motion-spring-soft-damping: 26;
+  --motion-spring-snappy-stiffness: 500;
+  --motion-spring-snappy-damping: 30;
+  --motion-stagger: 35ms;
+  --motion-stagger-max-items: 8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
