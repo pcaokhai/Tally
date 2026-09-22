@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { MockProvider } from "@/components/MockProvider";
 
 export const metadata: Metadata = {
   title: "Tally Operator Console",
@@ -12,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body>{children}</body>
+      <body>
+        <MockProvider>{children}</MockProvider>
+      </body>
     </html>
   );
 }

@@ -2,7 +2,7 @@ import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 import nextTypescript from "eslint-config-next/typescript";
 
 const config = [
-  { ignores: [".next/**", "lib/api/generated/**", "node_modules/**"] },
+  { ignores: [".next/**", "lib/api/generated/**", "node_modules/**", "public/mockServiceWorker.js"] },
   ...nextCoreWebVitals,
   ...nextTypescript,
 ];
