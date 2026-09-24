@@ -43,3 +43,10 @@ tally:
   ops:
     # Operator API (/ops/v1); bound to the ops network only in deployment.
     port: 8081
+  security:
+    jwt:
+      # Realm tally-tenants (ADR-007); TLY-002's compose Keycloak listens on 8180.
+      issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8180/realms/tally-tenants}
+      # No audience value is pinned anywhere else yet (docs/02 §7.1 names but doesn't publish the
+      # matrix/token shape) — ponytail: one env-overridable default until a real one is decided.
+      audience: ${TALLY_JWT_AUDIENCE:tally-api}
