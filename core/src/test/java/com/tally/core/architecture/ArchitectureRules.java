@@ -1,12 +1,15 @@
 package com.tally.core.architecture;
 
 import static com.tngtech.archunit.lang.conditions.ArchConditions.beAnnotatedWith;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaCodeUnit;
 import com.tngtech.archunit.core.domain.JavaField;
+import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
@@ -84,6 +87,59 @@ final class ArchitectureRules {
                 .should(annotatedWithAnyInjectionAnnotation)
                 .as("noFieldInjection")
                 .allowEmptyShould(true);
+    }
+
+    /**
+     * TLY-102 AC5: a class in {@code ..adapter.out..} that runs SQL (JdbcTemplate/JdbcClient/
+     * EntityManager) must do so inside a transaction, so {@code TenantAwareDataSource} always has a
+     * transaction-scoped connection to set {@code app.tenant_id} on for the RLS policy to see.
+     *
+     * <p>Limitation: only checks direct calls from the method body (no transitive call-graph walk),
+     * so a method that delegates to a private helper which itself runs SQL is not caught here — keep
+     * SQL calls directly in the {@code @Transactional} method.
+     */
+    static ArchRule sqlInAdapterOutRunsInATransaction() {
+        return methods()
+                .that()
+                .areDeclaredInClassesThat()
+                .resideInAPackage("..adapter.out..")
+                .and()
+                .areDeclaredInClassesThat()
+                .resideInAPackage("com.tally.core..")
+                .should(callSqlApiWithoutTransactional())
+                .as("sqlInAdapterOutRunsInATransaction")
+                .allowEmptyShould(true);
+    }
+
+    private static ArchCondition<JavaMethod> callSqlApiWithoutTransactional() {
+        return new ArchCondition<>("run SQL without @Transactional on the method or its class") {
+            @Override
+            public void check(JavaMethod method, ConditionEvents events) {
+                boolean callsSql = method.getMethodCallsFromSelf().stream()
+                        .map(JavaMethodCall::getTargetOwner)
+                        .anyMatch(ArchitectureRules::isSqlApi);
+                boolean transactional = method.isAnnotatedWith(TRANSACTIONAL)
+                        || method.getOwner().isAnnotatedWith(TRANSACTIONAL);
+                if (callsSql && !transactional) {
+                    events.add(SimpleConditionEvent.violated(
+                            method, method.getFullName() + " runs SQL outside @Transactional"));
+                }
+            }
+        };
+    }
+
+    private static final String TRANSACTIONAL = "org.springframework.transaction.annotation.Transactional";
+
+    private static boolean isSqlApi(JavaClass owner) {
+        return owner.isAssignableTo("org.springframework.jdbc.core.simple.JdbcClient")
+                || owner.isAssignableTo("org.springframework.jdbc.core.JdbcTemplate")
+                || owner.isAssignableTo("jakarta.persistence.EntityManager")
+                || owner.isAssignableTo(java.sql.Statement.class)
+                || owner.isAssignableTo(java.sql.Connection.class)
+                // the ledger module uses jOOQ, not JPA (core/CLAUDE.md) — must be covered too.
+                || owner.isAssignableTo("org.jooq.DSLContext")
+                || owner.isAssignableTo("org.jooq.Query")
+                || owner.isAssignableTo("org.jooq.ResultQuery");
     }
 
     private static ArchCondition<JavaClass> useFloatingPointTypes() {

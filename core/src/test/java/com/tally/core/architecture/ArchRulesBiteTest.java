@@ -32,6 +32,11 @@ class ArchRulesBiteTest {
         assertViolationsDetected(ArchitectureRules.noFieldInjection());
     }
 
+    @Test
+    void should_report_a_violation_when_adapter_out_runs_sql_without_a_transaction__TLY_102_AC5() {
+        assertViolationsDetected(ArchitectureRules.sqlInAdapterOutRunsInATransaction());
+    }
+
     private static void assertViolationsDetected(ArchRule rule) {
         EvaluationResult result = rule.evaluate(FIXTURES);
         assertThat(result.getFailureReport().getDetails())
