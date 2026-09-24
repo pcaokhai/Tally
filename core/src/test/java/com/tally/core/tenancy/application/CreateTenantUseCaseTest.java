@@ -48,6 +48,24 @@ class CreateTenantUseCaseTest {
     }
 
     @Test
+    void should_replay_stored_response_without_reprovisioning_when_key_was_already_claimed__TLY_101_AC1() {
+        // Simulates the race the port's claim/await contract exists to prevent: another (concurrent
+        // or earlier) request already claimed this key and has committed its result.
+        port.claimedKeys.add("key-raced");
+        port.idempotencyStore.put(
+                "key-raced",
+                "{\"id\":\"11111111-1111-1111-1111-111111111111\",\"name\":\"Other\",\"planCode\":\"starter\","
+                        + "\"tier\":\"POOL\",\"status\":\"ACTIVE\"}");
+
+        var result = useCase.create(new CreateTenantCommand("Acme", "starter", "owner@acme.test", "op-1", "key-raced"));
+
+        assertThat(result.name()).isEqualTo("Other");
+        assertThat(port.insertedTenants)
+                .as("the loser never provisions anything itself")
+                .isEmpty();
+    }
+
+    @Test
     void should_default_isolation_tier_to_pool_when_plan_does_not_force_silo__TLY_101_AC2() {
         var result = useCase.create(new CreateTenantCommand("Acme", "starter", "owner@acme.test", "op-1", "key-2"));
 
@@ -85,6 +103,7 @@ class CreateTenantUseCaseTest {
     private static final class FakePort implements TenantProvisioningPort {
         final Map<String, PlanVersion> plans = new HashMap<>();
         final Map<String, String> idempotencyStore = new HashMap<>();
+        final java.util.Set<String> claimedKeys = new java.util.HashSet<>();
         final java.util.List<Tenant> insertedTenants = new java.util.ArrayList<>();
         final java.util.List<UUID> insertedInvitations = new java.util.ArrayList<>();
         final java.util.List<UUID> insertedSeqs = new java.util.ArrayList<>();
@@ -124,7 +143,12 @@ class CreateTenantUseCaseTest {
         }
 
         @Override
-        public Optional<String> findIdempotentResponse(String idempotencyKey) {
+        public boolean claimIdempotencyKey(String idempotencyKey) {
+            return claimedKeys.add(idempotencyKey);
+        }
+
+        @Override
+        public Optional<String> awaitIdempotentResponse(String idempotencyKey) {
             return Optional.ofNullable(idempotencyStore.get(idempotencyKey));
         }
 

@@ -109,10 +109,13 @@ CREATE POLICY tenant_isolation ON kernel.audit_log
 GRANT SELECT, INSERT ON kernel.audit_log TO tally_app;
 
 -- Minimal idempotency store for this endpoint only (ponytail: see docs/plans/TLY-101.md Ruling 1;
--- TLY-110 generalizes this into a shared filter for every money-moving/creating write).
+-- TLY-110 generalizes this into a shared filter for every money-moving/creating write). response
+-- is nullable: a claim inserts the row with no response yet, then fills it in before commit
+-- (CreateTenantUseCase's claim/await pattern) so a concurrent claim on the same key blocks on the
+-- row lock instead of racing the provisioning work itself.
 CREATE TABLE kernel.idempotency_keys (
   key text NOT NULL PRIMARY KEY,
-  response jsonb NOT NULL,
+  response jsonb NULL,
   created_at timestamptz NOT NULL DEFAULT now());
 
 GRANT SELECT, INSERT ON kernel.idempotency_keys TO tally_app;

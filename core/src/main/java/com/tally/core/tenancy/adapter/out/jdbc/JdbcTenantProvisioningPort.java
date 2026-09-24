@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * JdbcClient adapter for {@link TenantProvisioningPort}. The whole class is {@code @Transactional}
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class JdbcTenantProvisioningPort implements TenantProvisioningPort {
 
     private final JdbcClient jdbcClient;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public JdbcTenantProvisioningPort(JdbcClient jdbcClient) {
         this.jdbcClient = jdbcClient;
@@ -30,7 +32,7 @@ public class JdbcTenantProvisioningPort implements TenantProvisioningPort {
     public Optional<PlanVersion> findLatestPlanVersion(String planCode) {
         return jdbcClient
                 .sql("""
-                        SELECT id, plan_code, version, limits
+                        SELECT id, plan_code, version, limits::text AS limits
                         FROM tenancy.plan_versions
                         WHERE plan_code = :planCode
                         ORDER BY version DESC
@@ -41,8 +43,15 @@ public class JdbcTenantProvisioningPort implements TenantProvisioningPort {
                         UUID.fromString(rs.getString("id")),
                         rs.getString("plan_code"),
                         rs.getInt("version"),
-                        rs.getString("limits").contains("\"isolation_tier\": \"SILO\"") ? IsolationTier.SILO : null))
+                        isolationTierFromLimits(rs.getString("limits"))))
                 .optional();
+    }
+
+    /** Parses the actual JSON instead of substring-matching the driver's text serialization of
+     * jsonb, whose exact whitespace is not a contract. */
+    private @org.jspecify.annotations.Nullable IsolationTier isolationTierFromLimits(String limitsJson) {
+        var node = objectMapper.readTree(limitsJson).get("isolation_tier");
+        return node != null && "SILO".equals(node.asString()) ? IsolationTier.SILO : null;
     }
 
     @Override
@@ -114,9 +123,26 @@ public class JdbcTenantProvisioningPort implements TenantProvisioningPort {
     }
 
     @Override
-    public Optional<String> findIdempotentResponse(String idempotencyKey) {
+    public boolean claimIdempotencyKey(String idempotencyKey) {
+        // ON CONFLICT DO NOTHING means a concurrent claim on the same key returns zero rows here
+        // rather than throwing; the row this INSERT does create is locked until this transaction
+        // commits or rolls back, which is what makes awaitIdempotentResponse below correct.
+        var claimed = jdbcClient
+                .sql(
+                        "INSERT INTO kernel.idempotency_keys (key) VALUES (:key) ON CONFLICT (key) DO NOTHING RETURNING key")
+                .param("key", idempotencyKey)
+                .query(String.class)
+                .optional();
+        return claimed.isPresent();
+    }
+
+    @Override
+    public Optional<String> awaitIdempotentResponse(String idempotencyKey) {
+        // FOR UPDATE blocks on the claiming transaction's row lock until it commits (response is
+        // set) or rolls back (the row disappears, so this returns empty and the caller retries the
+        // claim) — see kernel.idempotency_keys' comment in V100 and TenantProvisioningPort's javadoc.
         return jdbcClient
-                .sql("SELECT response::text AS response FROM kernel.idempotency_keys WHERE key = :key")
+                .sql("SELECT response::text AS response FROM kernel.idempotency_keys WHERE key = :key FOR UPDATE")
                 .param("key", idempotencyKey)
                 .query((rs, rowNum) -> rs.getString("response"))
                 .optional();
@@ -125,10 +151,7 @@ public class JdbcTenantProvisioningPort implements TenantProvisioningPort {
     @Override
     public void saveIdempotentResponse(String idempotencyKey, String responseJson) {
         jdbcClient
-                .sql("""
-                        INSERT INTO kernel.idempotency_keys (key, response) VALUES (:key, :response::jsonb)
-                        ON CONFLICT (key) DO NOTHING
-                        """)
+                .sql("UPDATE kernel.idempotency_keys SET response = :response::jsonb WHERE key = :key")
                 .param("key", idempotencyKey)
                 .param("response", responseJson)
                 .update();

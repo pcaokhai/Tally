@@ -18,6 +18,8 @@ import tools.jackson.databind.ObjectMapper;
 @Service
 public class CreateTenantUseCase {
 
+    private static final int MAX_CLAIM_ATTEMPTS = 3;
+
     private final TenantProvisioningPort port;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -27,11 +29,25 @@ public class CreateTenantUseCase {
 
     @Transactional
     public CreateTenantResult create(CreateTenantCommand command) {
-        var replay = port.findIdempotentResponse(command.idempotencyKey());
-        if (replay.isPresent()) {
-            return objectMapper.readValue(replay.get(), CreateTenantResult.class);
+        // Claim the key with a row insert first, so two concurrent requests for the same key race
+        // on a unique-constraint conflict instead of both reading "not found" and both fully
+        // provisioning a tenant (the bug a plain "read cache, then act" idempotency check has).
+        // The loser blocks on the winner's row lock in awaitIdempotentResponse and replays its
+        // result; it only retries the claim if the winner rolled back (row disappeared).
+        for (int attempt = 1; attempt <= MAX_CLAIM_ATTEMPTS; attempt++) {
+            if (port.claimIdempotencyKey(command.idempotencyKey())) {
+                return provisionAndSave(command);
+            }
+            var replay = port.awaitIdempotentResponse(command.idempotencyKey());
+            if (replay.isPresent()) {
+                return objectMapper.readValue(replay.get(), CreateTenantResult.class);
+            }
         }
+        throw new IllegalStateException("could not claim idempotency key " + command.idempotencyKey() + " after "
+                + MAX_CLAIM_ATTEMPTS + " attempts");
+    }
 
+    private CreateTenantResult provisionAndSave(CreateTenantCommand command) {
         PlanVersion plan = port.findLatestPlanVersion(command.planCode())
                 .orElseThrow(() -> ProblemException.validationFailed("plan_code", "unknown plan_code"));
 
