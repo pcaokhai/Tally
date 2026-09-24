@@ -1,5 +1,7 @@
 "use client";
 
+import { TenantSwitcher } from "./TenantSwitcher";
+
 export function Topbar({
   testMode,
   onTestModeChange,
@@ -34,6 +36,7 @@ export function Topbar({
       </label>
 
       <div className="flex items-center gap-(--spacing-12)">
+        <TenantSwitcher />
         <button
           type="button"
           role="switch"
