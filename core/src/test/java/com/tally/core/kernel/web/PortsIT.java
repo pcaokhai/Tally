@@ -140,7 +140,7 @@ class PortsIT {
      * it just does so before touching routing. See the Ruling in docs/plans/TLY-103.md.
      */
     @Test
-    void should_answer_not_found_when_the_tenant_api_is_called_on_the_management_port__TLY_004_AC4() {
+    void should_refuse_the_tenant_api_when_called_on_the_management_port__TLY_004_AC4() {
         assertThat(Http.status(MANAGEMENT_PORT, "/v1/me")).isEqualTo(401);
     }
 }
