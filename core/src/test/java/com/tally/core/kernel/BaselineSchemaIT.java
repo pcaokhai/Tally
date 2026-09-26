@@ -37,7 +37,7 @@ class BaselineSchemaIT extends PostgresKafkaIT {
                 .list();
 
         // Flyway keeps the version exactly as the filename spells it, so V001 is stored as "001".
-        assertThat(applied).containsExactly("001 baseline roles schemas");
+        assertThat(applied).containsExactly("001 baseline roles schemas", "100 tenancy provisioning");
     }
 
     @Test

@@ -24,11 +24,14 @@ class ModulithVerificationTest {
             "tenancy");
 
     /**
-     * {@code com.tally.core.api} holds the OpenAPI-generated interfaces and models. It is build
-     * output, not a bounded context, so it is excluded from the module model.
+     * {@code com.tally.core.api} and {@code com.tally.core.opsapi} hold the OpenAPI-generated
+     * interfaces and models (tenant and ops specs respectively, TLY-101). They are build output,
+     * not bounded contexts, so both are excluded from the module model.
      */
-    private static final ApplicationModules MODULES =
-            ApplicationModules.of(CoreApplication.class, JavaClass.Predicates.resideInAPackage("com.tally.core.api.."));
+    private static final ApplicationModules MODULES = ApplicationModules.of(
+            CoreApplication.class,
+            JavaClass.Predicates.resideInAPackage("com.tally.core.api..")
+                    .or(JavaClass.Predicates.resideInAPackage("com.tally.core.opsapi..")));
 
     @Test
     void should_expose_the_eleven_bounded_contexts_when_modules_are_scanned__TLY_004_AC1() {

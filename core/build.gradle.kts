@@ -17,6 +17,7 @@ repositories {
 }
 
 val openapiGenDir = layout.buildDirectory.dir("generated/openapi")
+val openapiOpsGenDir = layout.buildDirectory.dir("generated/openapi-ops")
 
 dependencyManagement {
     imports {
@@ -68,16 +69,39 @@ openApiGenerate {
     )
 }
 
+val openApiGenerateOps by tasks.registering(org.openapitools.generator.gradle.plugin.tasks.GenerateTask::class) {
+    generatorName.set("spring")
+    library.set("spring-boot")
+    inputSpec.set(rootDir.resolve("../contracts/ops-openapi.yaml").path)
+    outputDir.set(openapiOpsGenDir.get().asFile.path)
+    apiPackage.set("com.tally.core.opsapi")
+    modelPackage.set("com.tally.core.opsapi.model")
+    cleanupOutput.set(true)
+    configOptions.set(
+        mapOf(
+            "interfaceOnly" to "true",
+            "useSpringBoot3" to "true",
+            "useJakartaEe" to "true",
+            "skipDefaultInterface" to "false",
+            "openApiNullable" to "false",
+            "useTags" to "true",
+            "documentationProvider" to "none"
+        )
+    )
+}
+
 sourceSets {
     main {
         java {
             srcDir(openapiGenDir.map { it.dir("src/main/java") })
+            srcDir(openapiOpsGenDir.map { it.dir("src/main/java") })
         }
     }
 }
 
 tasks.compileJava {
     dependsOn(tasks.openApiGenerate)
+    dependsOn(openApiGenerateOps)
 }
 
 spotless {
