@@ -29,4 +29,9 @@ class ArchitectureTest {
     void should_reject_field_injection_when_rules_run__TLY_004_AC2() {
         ArchitectureRules.noFieldInjection().check(PRODUCTION_CLASSES);
     }
+
+    @Test
+    void should_require_a_transaction_around_adapter_out_sql_when_rules_run__TLY_102_AC5() {
+        ArchitectureRules.sqlInAdapterOutRunsInATransaction().check(PRODUCTION_CLASSES);
+    }
 }
