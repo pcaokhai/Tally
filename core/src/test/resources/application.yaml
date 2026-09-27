@@ -1,6 +1,9 @@
-# Keeps the unit `test` task runnable without Docker: no DataSource, no Flyway. Both class names
-# were verified against the Boot 4.1.1 jars that now ship them (spring-boot-jdbc, spring-boot-flyway).
-# PostgresKafkaIT undoes this with an empty spring.autoconfigure.exclude so integration tests migrate.
+# Keeps the unit `test` task runnable without Docker: Flyway is excluded (no real migration
+# attempt), and DataSource/Hikari never validates connectivity at startup (TLY-101: the first
+# JdbcClient-backed adapter needs a DataSource bean to exist for full-context tests to wire, but
+# none of those tests actually issue a query, so Hikari is told not to fail fast on a connection
+# nobody will open). PostgresKafkaIT undoes all of this with an empty spring.autoconfigure.exclude
+# and real datasource properties so integration tests migrate against a real Postgres.
 #
 # This file shadows src/main/resources/application.yaml on the test classpath, so it imports the
 # shipped runtime defaults explicitly — tests must see the real ports and virtual-thread setting.
@@ -9,5 +12,16 @@ spring:
     import: "classpath:/tally-runtime.yaml"
   autoconfigure:
     exclude:
-      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
       - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+  datasource:
+    url: jdbc:postgresql://unit-test-no-real-db:5432/tally
+    hikari:
+      initialization-fail-timeout: -1
+      connection-timeout: 250
+
+management:
+  health:
+    db:
+      # No real database backs this DataSource in the unit test task (see the comment above); the
+      # actuator health probes ServerPortDefaultsTest/PortsIT assert on must stay UP regardless.
+      enabled: false

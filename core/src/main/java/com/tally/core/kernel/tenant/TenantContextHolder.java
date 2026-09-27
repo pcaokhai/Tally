@@ -18,4 +18,21 @@ public final class TenantContextHolder {
     public static Optional<TenantContext> current() {
         return TENANT.isBound() ? Optional.of(TENANT.get()) : Optional.empty();
     }
+
+    /**
+     * Binds {@code context} for the dynamic extent of {@code body} (ADR-003). For requests this
+     * happens in {@link TenantFilter} from the credential; provisioning a brand-new tenant
+     * (TLY-101) is the one case where a use case binds the id itself, because the caller (an
+     * operator) carries no tenant claim but the insert still needs {@code kernel.current_tenant()}
+     * to satisfy the new rows' RLS {@code WITH CHECK}.
+     */
+    public static <T> T runWith(TenantContext context, java.util.concurrent.Callable<T> body) {
+        try {
+            return ScopedValue.where(TENANT, context).call(body::call);
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
