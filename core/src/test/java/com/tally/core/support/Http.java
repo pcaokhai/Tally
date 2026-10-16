@@ -7,6 +7,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Map;
 
 /**
  * Minimal HTTP helper for tests that must talk to a specific port. Boot 4 moved
@@ -23,10 +24,15 @@ public final class Http {
     private Http() {}
 
     public static HttpResponse<String> get(int port, String path) {
-        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+        return get(port, path, Map.of());
+    }
+
+    public static HttpResponse<String> get(int port, String path, Map<String, String> headers) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .timeout(TIMEOUT)
-                .GET()
-                .build();
+                .GET();
+        headers.forEach(builder::header);
+        HttpRequest request = builder.build();
         try {
             return CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
         } catch (IOException e) {
@@ -39,6 +45,10 @@ public final class Http {
 
     public static int status(int port, String path) {
         return get(port, path).statusCode();
+    }
+
+    public static int status(int port, String path, Map<String, String> headers) {
+        return get(port, path, headers).statusCode();
     }
 
     /**
