@@ -51,3 +51,13 @@ mocks/                      MSW handlers generated from contracts + fixture over
 - Unit/component tests name the AC: `it("finalized invoice hides edit controls — TLY-506-AC3")`.
 - Every screen has Storybook stories for loading, empty, error and partial states; Chromatic/Playwright visual snapshots.
 - Playwright journeys per slice (docs/08 §5) run in mock mode in CI and live mode at the integration checkpoint.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

@@ -1,11 +1,14 @@
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/shell/AppShell";
 import { MockProvider } from "@/components/MockProvider";
+import { QueryProvider } from "@/components/QueryProvider";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <MockProvider>
-      <AppShell>{children}</AppShell>
+      <QueryProvider>
+        <AppShell>{children}</AppShell>
+      </QueryProvider>
     </MockProvider>
   );
 }
