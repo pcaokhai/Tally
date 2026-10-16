@@ -15,6 +15,7 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
       opsw: ${{ steps.filter.outputs.opsw }}
       contracts: ${{ steps.filter.outputs.contracts }}
+      webhook_guide: ${{ steps.filter.outputs.webhook_guide }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -44,6 +45,10 @@ jobs:
               - 'scripts/gen_openapi.py'
               - 'scripts/gen_events.py'
               - 'scripts/gen_webhook_vectors.py'
+            webhook_guide:
+              - 'contracts/webhooks/**'
+              - 'scripts/verify_webhooks/**'
+              - 'docs/guides/verify-webhooks.md'
 
   core:
     needs: changes
@@ -148,6 +153,34 @@ jobs:
         with:
           go-version: ${{ steps.tv.outputs.go }}
       - run: make contracts
+
+  webhook-verify-guide:
+    needs: changes
+    if: needs.changes.outputs.webhook_guide == 'true' || needs.changes.outputs.contracts == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.27"
+      - name: Verify Node snippet
+        run: node scripts/verify_webhooks/verify.js
+      - name: Verify Python snippet
+        run: python3 scripts/verify_webhooks/verify.py
+      - name: Verify Java snippet
+        run: cd scripts/verify_webhooks && java Verify.java
+      - name: Verify Go snippet
+        run: cd scripts/verify_webhooks && go run verify.go
 
   docs-check:
     runs-on: ubuntu-latest
